@@ -8,109 +8,47 @@ import Navbar from "./Navbar";
 export default function Carousel({ setSearchQuery, searchQuery }) {
   const navigate = useNavigate();
 
+  // Sample carousel images (replace with your actual image URLs)
+ 
+
   return (
-    <div
-      className="page-container"
-      style={{
-        padding: 0,
-        margin: 0,
-        overflowX: "hidden",
-      }}
-    >
+    <div className="carousel-page-container">
       {/* Navbar at the very top with zero margin */}
       <Navbar />
 
-      <div
-        className="content-container"
-        style={{
-          padding: "15px",
-          marginTop: "15px",
-          width: "100%",
-          maxWidth: "1200px",
-          marginLeft: "auto",
-          marginRight: "auto",
-        }}
-      >
-        <div
-          className="carousel-container position-relative d-flex flex-column align-items-center"
-          style={{ gap: "15px" }}
-        >
+      <div className="carousel-content-container">
+        <div className="carousel-wrapper">
           {/* 🔍 Search Bar with Button */}
-          <div
-            className="search-wrapper d-flex w-100"
-            style={{
-              maxWidth: "600px",
-              marginBottom: "10px",
-            }}
-          >
-            <input
-              type="text"
-              className="form-control search-bar flex-grow-1"
-              placeholder="Search for food..."
-              onChange={(e) => setSearchQuery(e.target.value)}
-              value={searchQuery}
-              style={{
-                padding: "12px 15px",
-                borderRadius: "8px 0 0 8px",
-                fontSize: "1rem",
-                borderRight: "none",
-              }}
-            />
-            <button
-              className="search-button"
-              style={{
-                padding: "12px 20px",
-                borderRadius: "0 8px 8px 0",
-                border: "1px solid #ced4da",
-                borderLeft: "none",
-                backgroundColor: "#f8f9fa",
-                fontWeight: "500",
-              }}
-            >
-              Search
-            </button>
+          <div className="search-container">
+            <div className="search-input-wrapper">
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Search for food..."
+                onChange={(e) => setSearchQuery(e.target.value)}
+                value={searchQuery}
+              />
+              <button className="search-button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+            </div>
           </div>
-
-          {/* Show Menu Button */}
 
           {/* Carousel - Only shown when search query is empty */}
           {searchQuery === "" && (
-            <div
-              id="carouselExampleFade"
-              className="carousel slide carousel-fade w-100"
-              data-bs-ride="carousel"
-              data-bs-interval="500"
-              style={{
-                borderRadius: "0",
-                overflow: "hidden",
-                boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-                margin: "0 -15px", // Negative margin for full width on mobile
-              }}
-            >
-              <button
-                className="carousel-control-prev"
-                type="button"
-                data-bs-target="#carouselExampleFade"
-                data-bs-slide="prev"
-                style={{ width: "15%" }}
-              >
-                <span
-                  className="carousel-control-prev-icon"
-                  aria-hidden="true"
-                ></span>
+            <div id="foodCarousel" className="carousel slide" data-bs-ride="carousel">
+             
+              
+              
+              
+              <button className="carousel-control-prev" type="button" data-bs-target="#foodCarousel" data-bs-slide="prev">
+                <span className="carousel-control-prev-icon" aria-hidden="true" />
                 <span className="visually-hidden">Previous</span>
               </button>
-              <button
-                className="carousel-control-next"
-                type="button"
-                data-bs-target="#carouselExampleFade"
-                data-bs-slide="next"
-                style={{ width: "15%" }}
-              >
-                <span
-                  className="carousel-control-next-icon"
-                  aria-hidden="true"
-                ></span>
+              <button className="carousel-control-next" type="button" data-bs-target="#foodCarousel" data-bs-slide="next">
+                <span className="carousel-control-next-icon" aria-hidden="true" />
                 <span className="visually-hidden">Next</span>
               </button>
             </div>

@@ -356,32 +356,30 @@ export default function Home() {
                                     {filteredItems
                                         .filter(item => item.category === category._id)
                                         .map(item => (
-                                            <div key={item._id} className="food-item-card">
-                                                <img 
-                                                    src={item.imageUrl} 
-                                                    alt={item.name} 
-                                                    className="food-item-image"
-                                                />
-                                                <div className="food-item-details">
-                                                    <h3>{item.name}</h3>
-                                                    <p>{item.description}</p>
-                                                    <div className="price-options">
-                                                        {Object.entries(item.options).map(([option, price]) => (
-                                                            <div key={option} className="price-option">
-                                                                <span>{option}: ₹{price}</span>
-                                                                <div className="quantity-controls">
-                                                                    <button 
-                                                                        onClick={() => addToCart(item, option, price)}
-                                                                        className="add-to-cart-btn"
-                                                                    >
-                                                                        Add
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            </div>
+                                         <div className="food-item-card">
+    <img 
+        src={item.imageUrl} 
+        alt={item.name} 
+        className="food-item-image"
+    />
+    <div className="food-item-details">
+        <h3>{item.name}</h3>
+       
+        <div className="price-options">
+            {Object.entries(item.options).map(([option, price]) => (
+                <div key={option} className="price-option">
+                    <span>{option}: ₹{price}</span>
+                    <button 
+                        onClick={() => addToCart(item, option, price)}
+                        className="add-to-cart-btn"
+                    >
+                        Add
+                    </button>
+                </div>
+            ))}
+        </div>
+    </div>
+</div>
                                         ))}
                                 </div>
                             </div>
