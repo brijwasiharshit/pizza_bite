@@ -27,7 +27,7 @@ router.get("/foodData", async (req, res) => {
       foodItems,
       foodCategories,
     });
-
+  
     console.log("✅ Food data fetched successfully!");
   } catch (error) {
     console.error("❌ Error fetching food data:", error);
@@ -173,18 +173,17 @@ router.get("/tableOrders/:tableId", async (req, res) => {
         status: "created",
       })
       .sort({ createdAt: 1 })
-      .populate("itemId", "name"); // populate only the 'name' field of FoodItem
+      .populate("itemId"); 
 
-    // Format orders to include itemName directly
     const formattedOrders = orders.map((order) => ({
       _id: order._id,
       itemName: order.itemId.name, // populated name from FoodItem
       quantity: order.quantity,
       portion: order.portion,
-      price: order.totalPrice,
+      price: order.quantity*order.itemId.options[order.portion],
       createdAt: order.createdAt,
     }));
-
+ 
     res.json({ success: true, orders: formattedOrders });
   } catch (error) {
     console.error("Error fetching orders:", error);
@@ -217,16 +216,16 @@ router.post("/login", async (req, res) => {
     );
 
     res.cookie("token", token, {
-      // httpOnly: false,
-      // secure: process.env.NODE_ENV === "production",
-      // sameSite: "None",
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "None",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.cookie("role", user.role, {
-      // httpOnly: false,
-      // secure: process.env.NODE_ENV === "production",
-      // sameSite: "None",
+      httpOnly: false,  
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "None",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     res.status(200).json({

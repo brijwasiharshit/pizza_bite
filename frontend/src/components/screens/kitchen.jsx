@@ -19,72 +19,51 @@ const KitchenDashboard = () => {
   const navigate = useNavigate();
   const host = process.env.REACT_APP_HOST;
 
-  
   const playNotificationSound = () => {
     const audio = new Audio("/notification.mp3");
     audio.play().catch((e) => console.error("Audio playback error:", e));
   };
 
-  // 🧠 Socket connection for real-time updates
+  // Socket connection for real-time updates
   useEffect(() => {
     const socket = io(host);
 
-   // Update the socket.io 'newOrder' event handler
-socket.on("newOrder", (newOrder) => {
-  // Play sound first
-  const audio = new Audio("/notification.mp3");
-  audio.play().catch((e) => console.error("Audio playback error:", e));
+    socket.on("newOrder", (newOrder) => {
+      const audio = new Audio("/notification.mp3");
+      audio.play().catch((e) => console.error("Audio playback error:", e));
 
-  setOrders((prevOrders) => {
-    const updatedOrders = { ...prevOrders };
-    const tableNo = newOrder.tableNo;
+      setOrders((prevOrders) => {
+        const updatedOrders = { ...prevOrders };
+        const tableNo = newOrder.tableNo;
 
-    if (!updatedOrders[tableNo]) {
-      updatedOrders[tableNo] = [];
-    }
+        if (!updatedOrders[tableNo]) {
+          updatedOrders[tableNo] = [];
+        }
 
-    updatedOrders[tableNo].push(newOrder);
-    return updatedOrders;
-  });
+        updatedOrders[tableNo].push(newOrder);
+        return updatedOrders;
+      });
 
-  const notificationId = Date.now();
-  setNotifications((prev) => [
-    ...prev,
-    {
-      message: `New order placed at Table ${newOrder.tableNo}`,
-      id: notificationId,
-    },
-  ]);
+      const notificationId = Date.now();
+      setNotifications((prev) => [
+        ...prev,
+        {
+          message: `New order placed at Table ${newOrder.tableNo}`,
+          id: notificationId,
+        },
+      ]);
 
-  // Set timeout to exactly 3 seconds (3000ms)
-  setTimeout(() => {
-    setNotifications((prev) =>
-      prev.filter((notif) => notif.id !== notificationId)
-    );
-  }, 3000); // Changed from 5000 to 3000
-});
-
-// Update all other notification timeouts in the component:
-// In handleClearTable:
-setTimeout(() => {
-  setNotifications((prev) =>
-    prev.filter((notif) => notif.id !== notificationId)
-  );
-}, 3000); // Changed from 5000 to 3000
-
-// In handleDeleteOrder (you'll need to capture the notificationId like in other functions):
-const notificationId = Date.now();
-// ... rest of the code ...
-setTimeout(() => {
-  setNotifications((prev) =>
-    prev.filter((notif) => notif.id !== notificationId)
-  );
-}, 3000); // Changed from 5000 to 3000
+      setTimeout(() => {
+        setNotifications((prev) =>
+          prev.filter((notif) => notif.id !== notificationId)
+        );
+      }, 3000);
+    });
 
     return () => socket.disconnect();
   }, [host]);
 
-  // 📦 Fetch all orders
+  // Fetch all orders
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -166,35 +145,39 @@ setTimeout(() => {
       setNotifications((prev) =>
         prev.filter((notif) => notif.id !== notificationId)
       );
-    }, 5000);
+    }, 3000);
   };
 
- const handleDeleteOrder = async (tableNo, orderId) => {
-  try {
-    const response = await fetch(
-      `${host}/api/kitchen/cancelOrder/${tableNo}/${orderId}`,
-      {
-        method: "POST",
-        credentials: "include",
+  const handleDeleteOrder = async (tableNo, orderId) => {
+    try {
+      const response = await fetch(
+        `${host}/api/kitchen/cancelOrder/${tableNo}/${orderId}`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
+      const data = await response.json();
+      if (data.success) {
+        setOrders((prevOrders) => {
+          const updatedOrders = { ...prevOrders };
+          updatedOrders[tableNo] = updatedOrders[tableNo].filter(
+            (order) => order._id !== orderId
+          );
+          return updatedOrders;
+        });
       }
-    );
-    const data = await response.json();
-    if (data.success) {
-      setOrders((prevOrders) => {
-        const updatedOrders = { ...prevOrders };
-        updatedOrders[tableNo] = updatedOrders[tableNo].filter(
-          (order) => order._id !== orderId
-        );
-        return updatedOrders;
-      });
-      // Removed success notification
+    } catch (err) {
+      console.error("Delete order error:", err);
     }
-    // Removed error notifications
-  } catch (err) {
-    console.error("Delete order error:", err);
-    // Removed catch notification
-  }
-};
+  };
+
+  const calculateTableTotal = (tableOrders) => {
+    return tableOrders.reduce(
+      (total, order) => total + order.price * order.quantity,
+      0
+    );
+  };
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -307,6 +290,11 @@ setTimeout(() => {
                   )}
                 </div>
               )}
+              
+              {/* Total price display */}
+              <div className="table-total">
+                Total: ₹{calculateTableTotal(orders[tableNumber])}
+              </div>
             </div>
           ))}
       </div>

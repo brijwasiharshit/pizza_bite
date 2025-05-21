@@ -36,6 +36,16 @@
   border-radius: 6px;
   font-weight: bold;
 }
+.table-total {
+  padding: 10px 15px;
+  background-color: #f5f5f5;
+  border-top: 1px solid #ddd;
+  font-weight: bold;
+  text-align: right;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  margin-top: auto; /* Pushes it to the bottom */
+}
 
 .notification.success {
   background-color: #d4edda;

@@ -16,7 +16,6 @@ export default function MyOrders() {
         },
       });
       const data = await response.json();
-      console.log(data);
       if (data.success) {
         setOrders(data.orders);
       }
@@ -29,7 +28,9 @@ export default function MyOrders() {
     fetchOrders();
     const intervalId = setInterval(fetchOrders, 5000);
     return () => clearInterval(intervalId);
-  }, [tableId]); // added tableId for safety
+  }, [tableId]);
+
+  const totalPrice = orders.reduce((acc, order) => acc + order.price, 0);
 
   return (
     <div className="orders-container">
@@ -46,7 +47,7 @@ export default function MyOrders() {
                 <th>Items</th>
                 <th>Quantity</th>
                 <th>Portion</th>
-
+                <th>Price (₹)</th>
                 <th>Time</th>
               </tr>
             </thead>
@@ -57,12 +58,16 @@ export default function MyOrders() {
                   <td>{order.itemName}</td>
                   <td>{order.quantity}</td>
                   <td>{order.portion}</td>
-
+                  <td>₹{order.price}</td>
                   <td>{new Date(order.createdAt).toLocaleTimeString()}</td>
                 </tr>
               ))}
             </tbody>
           </table>
+
+          <div className="total-price" style={{ textAlign: "right", marginTop: "1rem", fontWeight: "bold", fontSize: "1.1rem" }}>
+            Total: ₹{totalPrice}
+          </div>
         </div>
       )}
     </div>
