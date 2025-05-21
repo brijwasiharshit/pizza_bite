@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Line } from 'react-chartjs-2';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import { Line } from "react-chartjs-2";
+import axios from "axios";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,11 +9,12 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
-} from 'chart.js';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap-icons/font/bootstrap-icons.css';
-import { useNavigate } from 'react-router-dom';
+  Legend,
+} from "chart.js";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import { NavLink, useNavigate } from "react-router-dom";
+// import AddFoodItms from "./AddItem";
 
 ChartJS.register(
   CategoryScale,
@@ -32,28 +33,49 @@ const Analytics = () => {
   const [salesData, setSalesData] = useState(null);
   const [error, setError] = useState(null);
 
+  // // creating state for add items
+  // const [addItemButton, setAddItemButton] = useState(false);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [salesTodayRes, weeklyTrendRes, totalOrdersRes, avgOrderValueRes] = await Promise.all([
+        const [
+          salesTodayRes,
+          weeklyTrendRes,
+          totalMonthlySales,
+          totalOrdersRes,
+          avgOrderValueRes,
+        ] = await Promise.all([
           axios.get(`${host}/api/admin/salesToday`, { withCredentials: true }),
-          axios.get(`${host}/api/admin/oneWeekComparison`, { withCredentials: true }),
+          axios.get(`${host}/api/admin/oneWeekComparison`, {
+            withCredentials: true,
+          }),
+          // fetch monthly sales
+          axios.get(`${host}/api/admin/monthlySales`, {
+            withCredentials: true,
+          }),
           axios.get(`${host}/api/admin/totalOrders`, { withCredentials: true }),
-          axios.get(`${host}/api/admin/avgOrderValue`, { withCredentials: true }),
+          axios.get(`${host}/api/admin/avgOrderValue`, {
+            withCredentials: true,
+          }),
         ]);
+        // console.log(totalMonthlySales);
+        const monthlySales = totalMonthlySales.data.totalSalesMonthly;
+        console.log(monthlySales);
 
         const trendData = weeklyTrendRes.data.salesLast7Days;
-        const dates = trendData.map(d => d.date); // e.g., ["2025-05-09", ...]
-        const dailySales = trendData.map(d => d.totalSales);
+        const dates = trendData.map((d) => d.date); // e.g., ["2025-05-09", ...]
+        const dailySales = trendData.map((d) => d.totalSales);
         const totalWeekSales = dailySales.reduce((a, b) => a + b, 0);
 
         setSalesData({
+          monthlySales,
           todaySales: salesTodayRes.data.totalSalesToday,
           weeklySales: totalWeekSales,
           totalOrders: totalOrdersRes.data.totalOrders,
           avgOrderValue: avgOrderValueRes.data.avgOrderValue,
           dates,
-          dailySales
+          dailySales,
         });
 
         setError(null);
@@ -70,14 +92,16 @@ const Analytics = () => {
 
   const chartData = {
     labels: salesData?.dates || [],
-    datasets: [{
-      label: 'Daily Sales (₹)',
-      data: salesData?.dailySales || [],
-      borderColor: '#4f46e5',
-      backgroundColor: 'rgba(79, 70, 229, 0.1)',
-      tension: 0.4,
-      fill: true
-    }]
+    datasets: [
+      {
+        label: "Daily Sales (₹)",
+        data: salesData?.dailySales || [],
+        borderColor: "#4f46e5",
+        backgroundColor: "rgba(79, 70, 229, 0.1)",
+        tension: 0.4,
+        fill: true,
+      },
+    ],
   };
 
   if (isLoading) {
@@ -99,16 +123,43 @@ const Analytics = () => {
   }
 
   return (
-    <div className="container-fluid py-4" style={{ fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" }}>
-      <div className="row mb-4">
-        <div className="col-12">
-          <h1 className="h2 fw-bold text-primary">
-            <i className="bi bi-graph-up me-2"></i>
-            Sales Dashboard
-          </h1>
+    <div
+      className="container-fluid py-4"
+      style={{ fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" }}
+    >
+      <div className="flex ">
+        <div className="row mb-4">
+          <div className="col-12">
+            <h1 className="h2 fw-bold text-primary">
+              <i className="bi bi-graph-up me-2"></i>
+              Sales Dashboard
+            </h1>
+            <div>{/* <NavLink to="/admin/items">items</NavLink> */}</div>
+          </div>
+        </div>
+        <div className="row mb-4">
+          <div className="col-12">
+            <h1 className="h2 fw-bold text-primary">
+              <NavLink to="/admin/items">items</NavLink>
+            </h1>
+            <div></div>
+          </div>
         </div>
       </div>
 
+      {/* creating add food item button */}
+      {/* 
+      <button onClick={() => setAddItemButton(!addItemButton)}>
+        {" "}
+        Add Items
+      </button>
+      {addItemButton && (
+        <div>
+          <AddFoodItms />
+        </div>
+      )} */}
+
+      {/* <NavLink to={/items}>items</NavLink> */}
       <div className="row mb-4">
         <div className="col-md-3 mb-3">
           <div className="card h-100 border-0 shadow-sm">
@@ -116,7 +167,9 @@ const Analytics = () => {
               <div className="d-flex justify-content-between">
                 <div>
                   <h6 className="text-muted mb-2">Today's Sales</h6>
-                  <h3 className="mb-0">₹{(salesData?.todaySales || 0).toLocaleString()}</h3>
+                  <h3 className="mb-0">
+                    ₹{(salesData?.todaySales || 0).toLocaleString()}
+                  </h3>
                 </div>
                 <div className="bg-primary bg-opacity-10 p-3 rounded">
                   <i className="bi bi-currency-rupee text-primary fs-4"></i>
@@ -132,7 +185,9 @@ const Analytics = () => {
               <div className="d-flex justify-content-between">
                 <div>
                   <h6 className="text-muted mb-2">Weekly Sales</h6>
-                  <h3 className="mb-0">₹{(salesData?.weeklySales || 0).toLocaleString()}</h3>
+                  <h3 className="mb-0">
+                    ₹{(salesData?.weeklySales || 0).toLocaleString()}₹
+                  </h3>
                 </div>
                 <div className="bg-success bg-opacity-10 p-3 rounded">
                   <i className="bi bi-calendar-week text-success fs-4"></i>
@@ -148,7 +203,9 @@ const Analytics = () => {
               <div className="d-flex justify-content-between">
                 <div>
                   <h6 className="text-muted mb-2">Total Orders</h6>
-                  <h3 className="mb-0">{(salesData?.totalOrders || 0).toLocaleString()}</h3>
+                  <h3 className="mb-0">
+                    {(salesData?.totalOrders || 0).toLocaleString()}
+                  </h3>
                 </div>
                 <div className="bg-warning bg-opacity-10 p-3 rounded">
                   <i className="bi bi-cart-check text-warning fs-4"></i>
@@ -164,10 +221,30 @@ const Analytics = () => {
               <div className="d-flex justify-content-between">
                 <div>
                   <h6 className="text-muted mb-2">Avg. Order Value</h6>
-                  <h3 className="mb-0">₹{(salesData?.avgOrderValue || 0).toLocaleString()}</h3>
+                  <h3 className="mb-0">
+                    ₹{(salesData?.avgOrderValue || 0).toLocaleString()}
+                  </h3>
                 </div>
                 <div className="bg-info bg-opacity-10 p-3 rounded">
                   <i className="bi bi-graph-up text-info fs-4"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-md-3 mb-3">
+          <div className="card h-100 border-0 shadow-sm">
+            <div className="card-body">
+              <div className="d-flex justify-content-between">
+                <div>
+                  <h6 className="text-muted mb-2">Monthly Sales</h6>
+                  <h3 className="mb-0">
+                    ₹{(salesData.monthlySales || 0).toLocaleString()}₹
+                  </h3>
+                </div>
+                <div className="bg-success bg-opacity-10 p-3 rounded">
+                  <i className="bi bi-calendar-week text-success fs-4"></i>
                 </div>
               </div>
             </div>
@@ -181,38 +258,38 @@ const Analytics = () => {
           <div className="card border-0 shadow-sm">
             <div className="card-body">
               <h5 className="card-title mb-4">7-Day Sales Trend</h5>
-              <div style={{ height: '400px' }}>
-                <Line 
+              <div style={{ height: "400px" }}>
+                <Line
                   data={chartData}
                   options={{
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                      legend: { position: 'top' },
+                      legend: { position: "top" },
                       tooltip: {
-                        mode: 'index',
+                        mode: "index",
                         intersect: false,
                         callbacks: {
-                          label: function(context) {
+                          label: function (context) {
                             return `₹${context.raw.toLocaleString()}`;
-                          }
-                        }
-                      }
+                          },
+                        },
+                      },
                     },
                     scales: {
                       y: {
                         beginAtZero: false,
                         grid: { drawBorder: false },
                         ticks: {
-                          callback: function(value) {
+                          callback: function (value) {
                             return `₹${value.toLocaleString()}`;
-                          }
-                        }
+                          },
+                        },
                       },
                       x: {
-                        grid: { display: false }
-                      }
-                    }
+                        grid: { display: false },
+                      },
+                    },
                   }}
                 />
               </div>

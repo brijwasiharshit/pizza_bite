@@ -67,6 +67,19 @@ router.get("/fetchTables", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch tables" });
   }
 });
+// delelte order
+router.delete("/deletefooditem", async (req, res) => {
+  try {
+    const deletedItem = await FoodItem.findByIdAndDelete(req.body._id);
+    if (!deletedItem) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+    res.status(200).json({ message: "Item deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting item:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 router.post("/placeOrder", async (req, res) => {
   try {
@@ -204,16 +217,16 @@ router.post("/login", async (req, res) => {
     );
 
     res.cookie("token", token, {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "None",
+      // httpOnly: false,
+      // secure: process.env.NODE_ENV === "production",
+      // sameSite: "None",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.cookie("role", user.role, {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "None",
+      // httpOnly: false,
+      // secure: process.env.NODE_ENV === "production",
+      // sameSite: "None",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     res.status(200).json({

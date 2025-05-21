@@ -68,6 +68,52 @@ adminRouter.get("/weeklySales", async (req, res) => {
   }
 });
 
+adminRouter.get("/monthlySales", async (req, res) => {
+  try {
+    // 1. Get the first day of the current month
+    const today = new Date(); // ✅ Fixed: "date" → "Date" (JavaScript is case-sensitive)
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    // 2. Fetch all delivered orders this month
+    const orders = await Order.find({
+      // ✅ Added `await` (missing in original)
+      status: "delivered",
+      createdAt: { $gte: firstDayOfMonth },
+    }).lean(); // ✅ Fixed: `.lean` → `.lean()` (it's a function call)
+
+    // 3. Extract unique food item IDs from orders
+    const itemIds = [
+      ...new Set(orders.map((order) => order.itemId.toString())),
+    ];
+
+    // 4. Fetch all food items from the database
+    const foodItems = await FoodItem.find({ _id: { $in: itemIds } }).lean();
+
+    // 5. Create a lookup map for food items (for fast access)
+    const foodMap = {};
+    for (const item of foodItems) {
+      foodMap[item._id.toString()] = item;
+    }
+
+    // 6. Calculate total sales
+    let totalSales = 0;
+    for (const order of orders) {
+      const foodItem = foodMap[order.itemId.toString()];
+      if (foodItem) {
+        const price = foodItem.options[order.portion]; // Get price based on portion (e.g., "large")
+        totalSales += price * order.quantity; // Add to total
+      }
+    }
+
+    // 7. Send the result
+    res.json({ success: true, totalSalesMonthly: totalSales });
+  } catch (error) {
+    // 8. Error handling (improved from original)
+    console.error("Monthly sales error:", error); // Log the error
+    res.status(500).json({ success: false, error: "Server error" }); // Send proper error response
+  }
+});
+
 // TOTAL ORDERS
 adminRouter.get("/totalOrders", async (req, res) => {
   try {
@@ -131,7 +177,7 @@ adminRouter.get("/oneWeekComparison", async (req, res) => {
 
       const orders = await Order.find({
         status: "delivered",
-        createdAt: { $gte: dayStart, $lt: dayEnd }
+        createdAt: { $gte: dayStart, $lt: dayEnd },
       }).lean();
 
       let dailyTotal = 0;
@@ -145,7 +191,7 @@ adminRouter.get("/oneWeekComparison", async (req, res) => {
 
       salesData.push({
         date: dayStart.toISOString().split("T")[0], // Format: YYYY-MM-DD
-        totalSales: dailyTotal
+        totalSales: dailyTotal,
       });
     }
 
@@ -155,8 +201,6 @@ adminRouter.get("/oneWeekComparison", async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
-
-
 
 adminRouter.post("/toggleAvl", async (req, res) => {
   try {
@@ -202,6 +246,20 @@ adminRouter.post("/toggleAvl", async (req, res) => {
     });
   }
 });
+// updating food item
+adminRouter.put('/updateavailability/:id' , async (req, res) => {
+  try {
+    const updated = await FoodItem.findByIdAndUpdate(
+      req.params.id,
+      { isAvailable: req.body.isAvailable },
+      { new: true }
+    );
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update availability' });
+  }
+});
+
 
 adminRouter.post("/addfooditem", async (req, res) => {
   try {

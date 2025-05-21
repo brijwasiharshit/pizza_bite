@@ -22,10 +22,15 @@ import MyOrders from "./components/screens/Myorders";
 
 import { CartProvider, useCart } from "./components/ContextReducer";
 import Front from "./components/front";
+import DeleteItems from "./components/screens/DeleteItem";
 import Admin from "./components/admin";
 import Thanks from "./components/screens/thanks";
 import AdminPanel from "./components/screens/kitchen";
 import Last from "./components/screens/last";
+
+import AddItems from "./components/AddItem";
+// import AddItemNavbar from "./components/AddItemsNavbar";
+import AdminLayout from "./components/screens/AddItemLayout";
 // ✅ Create Theme Context for Dark Mode
 const ThemeContext = createContext();
 export const useTheme = () => useContext(ThemeContext);
@@ -62,6 +67,11 @@ function App() {
                 <Route path="/thanks" element={<Thanks />} />
                 <Route path="/kitchen" element={<AdminPanel />} />
                 <Route path="/last" element={<Last />} />
+                <Route path="/admin/items" element={<AdminLayout />}>
+                  <Route path="/admin/items/addItems" element={<AddItems />} />
+                  <Route path="/admin/items/deleteItems" element={<DeleteItems />}
+                  />
+                </Route>
               </Routes>
             </div>
           </div>

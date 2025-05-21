@@ -2,9 +2,9 @@ const express = require("express");
 const validateLogin = require("../validator/validateLogin");
 const User = require("../models/User");
 const router = express.Router();
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-require('dotenv').config();
+require("dotenv").config();
 
 router.get("/foodData", async (req, res) => {
   try {
@@ -36,14 +36,15 @@ router.post("/login", async (req, res) => {
   if (!isPassCorrect) res.status(401).json({ message: "Invalid Credentials!" });
   const tokenSecret = process.env.TOKEN_SECRET;
   console.log("userrole", user.role);
-  const token = await jwt.sign( { id: user._id, role: user.role },tokenSecret,{expiresIn: '1d'});
-  res.cookie("token",token);
-  res.status(200).json({message: "Logged in Successfully!"});
+  const token = await jwt.sign({ id: user._id, role: user.role }, tokenSecret, {
+    expiresIn: "1d",
+  });
+  res.cookie("token", token);
+  res.status(200).json({ message: "Logged in Successfully!" });
 });
 
 router.post("/placeOrder", async (req, res) => {
-  const {itemName,quantity,price,tableNo} = req.body;
-  
+  const { itemName, quantity, price, tableNo } = req.body;
 });
 router.get("/:tableNumber/currentOrders", (req, res) => {});
 
