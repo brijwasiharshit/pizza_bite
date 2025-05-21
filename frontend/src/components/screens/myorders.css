@@ -12,6 +12,12 @@
   max-width: 1200px;
   margin: 0 auto;
 }
+.total-price {
+  text-align: right;
+  margin-top: 10px;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
 
 .orders-title {
   color: #333;
