@@ -14,12 +14,25 @@ const userRouter = require("./Routes/userRoutes");
 const app = express();
 const server = http.createServer(app);
 app.use(cookieParser());
+<<<<<<< HEAD
 app.use(express.json());
 // ⚡ Initialize Socket.IO
 const io = new Server(server, {
   cors: {
     origin: "http://localhost:3000",
     methods: ["GET", "POST","DELETE","PUT"],
+=======
+
+// ⚡ Initialize Socket.IO
+const io = new Server(server, {
+  cors: {
+    origin: [
+      "http://localhost:3000",
+      "https://pizza-bite-frontend.onrender.com"
+    ],
+    methods: ["GET", "POST"],
+    credentials: true,
+>>>>>>> 0a9b17a4eb9bf8c3895bcd7b3b39bbf3fe3fef3c
   },
 });
 
@@ -34,6 +47,7 @@ io.on("connection", (socket) => {
 
 app.set("io", io);
 
+<<<<<<< HEAD
 
 app.use(cors({
   origin: "http://localhost:3000",
@@ -41,6 +55,19 @@ app.use(cors({
 }));
 
 app.use(cookieParser());
+=======
+// 🌍 CORS middleware
+const corsOptions = {
+  origin: [
+    "http://localhost:3000",
+    "https://pizza-bite-frontend.onrender.com"
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
+app.use(express.json());
+>>>>>>> 0a9b17a4eb9bf8c3895bcd7b3b39bbf3fe3fef3c
 
 // 📦 Routes
 app.use("/api/user", userRouter);
@@ -58,7 +85,6 @@ const port = process.env.PORT || 5000;
 connectDb()
   .then(() => {
     server.listen(port, () => {
-      // ⚠️ server.listen not app.listen
       console.log(`🚀 Server is running on port ${port}`);
     });
   })
