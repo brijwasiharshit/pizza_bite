@@ -5,6 +5,7 @@ const DeleteItems = () => {
   const [items, setItems] = useState([]);
   const [loadingIds, setLoadingIds] = useState([]);
   const [toggleLoading, setToggleLoading] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchItems();
@@ -12,7 +13,9 @@ const DeleteItems = () => {
 
   const fetchItems = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/user/foodData");
+      const res = await axios.get("http://localhost:5000/api/user/foodData", {
+        withCredentials: true,
+      });
       setItems(res.data.foodItems || []);
     } catch (err) {
       console.error("Failed to fetch items", err);
@@ -25,7 +28,10 @@ const DeleteItems = () => {
 
     try {
       await axios.delete(
-        `http://localhost:5000/api/admin/deletefooditem/${id}`
+        `http://localhost:5000/api/admin/deletefooditem/${id}`,
+        {
+          withCredentials: true,
+        }
       );
       alert("Item deleted successfully");
       setItems((prev) => prev.filter((item) => item._id !== id));
@@ -38,25 +44,24 @@ const DeleteItems = () => {
   };
 
   const handleToggleAvailability = async (id, currentStatus) => {
+    if (toggleLoading.includes(id)) return;
     setToggleLoading((prev) => [...prev, id]);
 
     try {
-      const token = localStorage.getItem("authToken");
-
-      const res = await axios.put(
+      await axios.put(
+        // changed PATCH to PUT to match backend
         `http://localhost:5000/api/admin/updateavailability/${id}`,
         { isAvailable: !currentStatus },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { withCredentials: true }
       );
 
-      setItems((prev) =>
-        prev.map((item) =>
-          item._id === id ? { ...item, isAvailable: !currentStatus } : item
-        )
+      const newItems = items.map((item) =>
+        item._id === id ? { ...item, isAvailable: !currentStatus } : item
+      );
+      setItems(newItems);
+
+      alert(
+        `Item is now ${!currentStatus ? "✅ Available" : "❌ Not Available"}`
       );
     } catch (err) {
       console.error("Failed to update availability", err);
@@ -108,57 +113,113 @@ const DeleteItems = () => {
     cursor: "pointer",
   };
 
+  const getToggleStyle = (isAvailable, isLoading) => ({
+    display: "inline-flex",
+    alignItems: "center",
+    cursor: isLoading ? "not-allowed" : "pointer",
+    position: "relative",
+    width: "50px",
+    height: "26px",
+    backgroundColor: isAvailable ? "#10b981" : "#ccc",
+    borderRadius: "50px",
+    transition: "background-color 0.3s ease",
+    opacity: isLoading ? 0.5 : 1,
+  });
+
+  const getToggleCircleStyle = (isAvailable) => ({
+    position: "absolute",
+    top: "3px",
+    left: isAvailable ? "26px" : "3px",
+    width: "20px",
+    height: "20px",
+    borderRadius: "50%",
+    backgroundColor: "#fff",
+    transition: "left 0.3s ease",
+    boxShadow: "0 0 2px rgba(0,0,0,0.3)",
+  });
+
   return (
     <div style={containerStyle}>
       <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
         Manage Food Items
       </h2>
+
+      <input
+        type="text"
+        placeholder="Search food..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        style={{
+          width: "100%",
+          padding: "10px",
+          marginBottom: "20px",
+          borderRadius: "6px",
+          border: "1px solid #ccc",
+        }}
+      />
+
       {items.length === 0 && (
         <p style={{ textAlign: "center" }}>No items to display.</p>
       )}
-      {items.map((item) => (
-        <div key={item._id} style={itemStyle}>
-          <div style={leftSideStyle}>
-            <img src={item.imageUrl} alt={item.name} style={imageStyle} />
-            <div>
-              <div style={nameStyle}>{item.name}</div>
+
+      {items
+        .filter((item) =>
+          item.name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .map((item) => (
+          <div key={item._id} style={itemStyle}>
+            <div style={leftSideStyle}>
+              {/* fallback if imageUrl missing */}
+              <img
+                src={item.imageUrl || "https://via.placeholder.com/80"}
+                alt={item.name}
+                style={imageStyle}
+              />
               <div>
-                Status: {item.isAvailable ? "✅ Available" : "❌ Not Available"}
+                <div style={nameStyle}>{item.name}</div>
+                <div>
+                  Status:{" "}
+                  {item.isAvailable ? "✅ Available" : "❌ Not Available"}
+                </div>
               </div>
             </div>
+
+            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+              <div
+                onClick={() =>
+                  handleToggleAvailability(item._id, item.isAvailable)
+                }
+                style={getToggleStyle(
+                  item.isAvailable,
+                  toggleLoading.includes(item._id)
+                )}
+                aria-label="Toggle Availability"
+                role="button"
+                tabIndex={0}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    handleToggleAvailability(item._id, item.isAvailable);
+                  }
+                }}
+              >
+                <div style={getToggleCircleStyle(item.isAvailable)}></div>
+              </div>
+
+              <button
+                onClick={() => handleDelete(item._id)}
+                disabled={loadingIds.includes(item._id)}
+                style={{
+                  ...buttonStyle,
+                  backgroundColor: "#dc2626",
+                  color: "#fff",
+                  opacity: loadingIds.includes(item._id) ? 0.6 : 1,
+                }}
+              >
+                {loadingIds.includes(item._id) ? "Deleting..." : "Delete"}
+              </button>
+            </div>
           </div>
-          <div style={{ display: "flex", gap: "10px" }}>
-            <button
-              onClick={() =>
-                handleToggleAvailability(item._id, item.isAvailable)
-              }
-              disabled={toggleLoading.includes(item._id)}
-              style={{
-                ...buttonStyle,
-                backgroundColor: item.isAvailable ? "#f59e0b" : "#10b981",
-                color: "#fff",
-              }}
-            >
-              {toggleLoading.includes(item._id)
-                ? "Updating..."
-                : item.isAvailable
-                ? "Mark Unavailable"
-                : "Mark Available"}
-            </button>
-            <button
-              onClick={() => handleDelete(item._id)}
-              disabled={loadingIds.includes(item._id)}
-              style={{
-                ...buttonStyle,
-                backgroundColor: "#dc2626",
-                color: "#fff",
-              }}
-            >
-              {loadingIds.includes(item._id) ? "Deleting..." : "Delete"}
-            </button>
-          </div>
-        </div>
-      ))}
+        ))}
     </div>
   );
 };

@@ -9,9 +9,12 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
+  console.log("email:", credentials.email);
+  console.log("password:", credentials.password);
     e.preventDefault();
     setIsLoading(true);
     setError("");

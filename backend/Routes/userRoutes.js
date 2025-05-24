@@ -22,6 +22,7 @@ router.get("/foodData", async (req, res) => {
     if (foodItems.length === 0) {
       return res.status(404).json({ error: "No food items found" });
     }
+    // if(isAvailable===true)
 
     res.status(200).json({
       foodItems,
@@ -193,6 +194,7 @@ router.get("/tableOrders/:tableId", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   try {
+    console.log("body",req.body);
     const { email, password } = req.body;
 
     if (!email || !password) {

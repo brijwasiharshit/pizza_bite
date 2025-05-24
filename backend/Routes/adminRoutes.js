@@ -202,55 +202,12 @@ adminRouter.get("/oneWeekComparison", async (req, res) => {
   }
 });
 
-adminRouter.post("/toggleAvl", async (req, res) => {
-  try {
-    const { itemId } = req.body;
-    if (!itemId) {
-      return res.status(400).json({
-        success: false,
-        message: "itemId is required",
-      });
-    }
-    const foodItem = await FoodItem.findById(itemId);
 
-    if (!foodItem) {
-      return res.status(404).json({
-        success: false,
-        message: "Food item not found",
-      });
-    }
-    foodItem.isAvailable = !foodItem.isAvailable;
-
-    await foodItem.save();
-
-    res.json({
-      success: true,
-      message: `Food item availability set to ${foodItem.isAvailable}`,
-      isAvailable: foodItem.isAvailable,
-    });
-  } catch (error) {
-    console.error("Error toggling availability:", error);
-
-    // Handle invalid ID format
-    if (error.name === "CastError") {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid itemId format",
-      });
-    }
-
-    res.status(500).json({
-      success: false,
-      message: "Failed to toggle availability",
-      error: error.message,
-    });
-  }
-});
 // updating food item
 adminRouter.put('/updateavailability/:id' , async (req, res) => {
   try {
-    const updated = await FoodItem.findByIdAndUpdate(
-      req.params.id,
+    const {id} = req.params;
+    const updated = await FoodItem.findByIdAndUpdate(id,
       { isAvailable: req.body.isAvailable },
       { new: true }
     );
@@ -259,10 +216,46 @@ adminRouter.put('/updateavailability/:id' , async (req, res) => {
     res.status(500).json({ message: 'Failed to update availability' });
   }
 });
+// DELETE food item by ID
+adminRouter.delete("/deletefooditem/:id", async (req, res) => {
+  try {
+    const deletedItem = await FoodItem.findByIdAndDelete(req.params.id);
+
+    if (!deletedItem) {
+      return res.status(404).json({
+        success: false,
+        message: "Food item not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Food item deleted successfully",
+      deletedItem,
+    });
+  } catch (err) {
+    console.error("Error deleting food item:", err);
+
+    // Handle invalid ID format
+    if (err.name === "CastError") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid food item ID format",
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete food item",
+      error: err.message,
+    });
+  }
+});
 
 
 adminRouter.post("/addfooditem", async (req, res) => {
   try {
+    console.log("api called!");
     const { name, description, options, category, imageUrl } = req.body;
     console.log(name);
     console.log(description);

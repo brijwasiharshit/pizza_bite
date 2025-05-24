@@ -3,11 +3,11 @@ const kitchenRouter = express.Router();
 const kitchenAuth = require('../middleware/kitchen');
 const OrderItem = require("../models/Order");
 const Table = require("../models/Table");
-kitchenRouter.use(kitchenAuth);
+
 
 kitchenRouter.get("/allOrders", async (req, res) => {
     try {
-    
+
       const tables = await Table.find().lean();
 
       const orders = await OrderItem.find({ status: "created" })

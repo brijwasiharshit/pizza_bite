@@ -14,11 +14,12 @@ const userRouter = require("./Routes/userRoutes");
 const app = express();
 const server = http.createServer(app);
 app.use(cookieParser());
+app.use(express.json());
 // ⚡ Initialize Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000/",
-    methods: ["GET", "POST"],
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST","DELETE","PUT"],
   },
 });
 
@@ -33,13 +34,13 @@ io.on("connection", (socket) => {
 
 app.set("io", io);
 
-const corsOptions = {
-  origin: ["http://localhost:3000"],
-  credentials: true,
-  optionsSuccessStatus: 200,
-};
-app.use(cors(corsOptions));
-app.use(express.json());
+
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true
+}));
+
+app.use(cookieParser());
 
 // 📦 Routes
 app.use("/api/user", userRouter);

@@ -1,16 +1,14 @@
-import React from "react";
-import { Outlet, NavLink } from "react-router-dom";
+import React from 'react'
+import Navbar from '../AddItemsNavbar'
+import { Outlet } from 'react-router-dom'
 
-export default function AdminLayout() {
+const AddItemLayout = () => {
   return (
     <div>
-      <nav>
-        <NavLink to="addItems">Add Items</NavLink> |{" "}
-        <NavLink to="deleteItems">Delete Items</NavLink>
-      </nav>
-      <hr />
-      {/* Child routes will be rendered here */}
-      <Outlet />
+      <Navbar/>
+      <Outlet/>
     </div>
-  );
+  )
 }
+
+export default AddItemLayout

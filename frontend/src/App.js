@@ -68,7 +68,8 @@ function App() {
                 <Route path="/kitchen" element={<AdminPanel />} />
                 <Route path="/last" element={<Last />} />
                 <Route path="/admin/items" element={<AdminLayout />}>
-                  <Route path="/admin/items/addItems" element={<AddItems />} />
+              
+                  <Route index element={<AddItems />} />
                   <Route path="/admin/items/deleteItems" element={<DeleteItems />}
                   />
                 </Route>
