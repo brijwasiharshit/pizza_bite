@@ -68,6 +68,7 @@ adminRouter.get("/weeklySales", async (req, res) => {
   }
 });
 
+// this is for cash payment
 adminRouter.get("/monthlySales", async (req, res) => {
   try {
     // 1. Get the first day of the current month
@@ -78,6 +79,7 @@ adminRouter.get("/monthlySales", async (req, res) => {
     const orders = await Order.find({
       // ✅ Added `await` (missing in original)
       status: "delivered",
+      method:"cash",
       createdAt: { $gte: firstDayOfMonth },
     }).lean(); // ✅ Fixed: `.lean` → `.lean()` (it's a function call)
 
@@ -107,6 +109,53 @@ adminRouter.get("/monthlySales", async (req, res) => {
 
     // 7. Send the result
     res.json({ success: true, totalSalesMonthly: totalSales });
+  } catch (error) {
+    // 8. Error handling (improved from original)
+    console.error("Monthly sales error:", error); // Log the error
+    res.status(500).json({ success: false, error: "Server error" }); // Send proper error response
+  }
+});
+//this is for online payment
+adminRouter.get("/monthlySalesOnline", async (req, res) => {
+  try {
+    // 1. Get the first day of the current month
+    const today = new Date(); // ✅ Fixed: "date" → "Date" (JavaScript is case-sensitive)
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    // 2. Fetch all delivered orders this month
+    const orders = await Order.find({
+      // ✅ Added `await` (missing in original)
+      status: "delivered",
+      method:"online",
+      createdAt: { $gte: firstDayOfMonth },
+    }).lean(); // ✅ Fixed: `.lean` → `.lean()` (it's a function call)
+
+    // 3. Extract unique food item IDs from orders
+    const itemIds = [
+      ...new Set(orders.map((order) => order.itemId.toString())),
+    ];
+
+    // 4. Fetch all food items from the database
+    const foodItems = await FoodItem.find({ _id: { $in: itemIds } }).lean();
+
+    // 5. Create a lookup map for food items (for fast access)
+    const foodMap = {};
+    for (const item of foodItems) {
+      foodMap[item._id.toString()] = item;
+    }
+
+    // 6. Calculate total sales
+    let totalSalesOnline = 0;
+    for (const order of orders) {
+      const foodItem = foodMap[order.itemId.toString()];
+      if (foodItem) {
+        const price = foodItem.options[order.portion]; // Get price based on portion (e.g., "large")
+        totalSalesOnline += price * order.quantity; // Add to total
+      }
+    }
+
+    // 7. Send the result
+    res.json({ success: true, totalSalesMonthlyonline: totalSalesOnline });
   } catch (error) {
     // 8. Error handling (improved from original)
     console.error("Monthly sales error:", error); // Log the error

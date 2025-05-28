@@ -16,6 +16,9 @@ const KitchenDashboard = () => {
   const [orders, setOrders] = useState({});
   const [expandedTables, setExpandedTables] = useState({});
   const [notifications, setNotifications] = useState([]);
+  const [showPayment, setShowPayment] = useState(false);
+  const [selectedTable, setSelectedTable] = useState(null);
+
   const navigate = useNavigate();
   const host = process.env.REACT_APP_HOST;
 
@@ -91,7 +94,7 @@ const KitchenDashboard = () => {
     }));
   };
 
-  const handleClearTable = async (tableNumber) => {
+  const handleClearTable = async (tableNumber, method) => {
     const notificationId = Date.now();
 
     try {
@@ -100,6 +103,10 @@ const KitchenDashboard = () => {
         {
           method: "POST",
           credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ payment: method }),
         }
       );
 
@@ -222,8 +229,7 @@ const KitchenDashboard = () => {
             <div key={tableNumber} className="table-card">
               <div
                 className="table-header"
-                onClick={() => toggleTableExpanded(tableNumber)}
-              >
+                onClick={() => toggleTableExpanded(tableNumber)}>
                 <div className="table-info">
                   <span className="table-number">Table {tableNumber}</span>
                   <span className="order-count">
@@ -231,17 +237,19 @@ const KitchenDashboard = () => {
                     {orders[tableNumber].length === 1 ? "order" : "orders"}
                   </span>
                 </div>
+
                 <div className="table-actions">
                   <button
                     className="clear-table-btn"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleClearTable(tableNumber);
+                      setSelectedTable(tableNumber);
+                      setShowPayment(true);
                     }}
-                    title="Mark Table as Cleared"
-                  >
+                    title="Mark Table as Cleared">
                     <Check size={18} style={{ color: "green" }} />
                   </button>
+
                   {expandedTables[tableNumber] ? (
                     <ChevronUp size={20} />
                   ) : (
@@ -280,8 +288,7 @@ const KitchenDashboard = () => {
                             onClick={() =>
                               handleDeleteOrder(tableNumber, order._id)
                             }
-                            title="Delete Order"
-                          >
+                            title="Delete Order">
                             <Trash2 size={16} color="red" />
                           </button>
                         </div>
@@ -290,14 +297,96 @@ const KitchenDashboard = () => {
                   )}
                 </div>
               )}
-              
-              {/* Total price display */}
+
               <div className="table-total">
                 Total: ₹{calculateTableTotal(orders[tableNumber])}
               </div>
             </div>
           ))}
       </div>
+
+      {/* Payment modal */}
+      {showPayment && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+          }}>
+          <div
+            style={{
+              backgroundColor: "#FFFDD0",
+              padding: "30px",
+              borderRadius: "10px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+              position: "relative",
+              width: "300px",
+              textAlign: "center",
+            }}>
+            <h2 style={{ marginBottom: "20px" }}>Choose Payment Method</h2>
+
+            <button
+              onClick={() => {
+                handleClearTable(selectedTable, "cash");
+                setShowPayment(false);
+              }}
+              style={{
+                padding: "10px 15px",
+                margin: "10px",
+                fontSize: "14px",
+                cursor: "pointer",
+                border: "none",
+                borderRadius: "5px",
+                backgroundColor: "orange",
+                color: "white",
+              }}>
+              Pay by Cash
+            </button>
+
+            <button
+              onClick={() => {
+                handleClearTable(selectedTable, "online");
+                setShowPayment(false);
+              }}
+              style={{
+                padding: "10px 15px",
+                margin: "10px",
+                fontSize: "14px",
+                cursor: "pointer",
+                border: "none",
+                borderRadius: "5px",
+                backgroundColor: "orange",
+                color: "white",
+              }}>
+              Pay Online
+            </button>
+
+            <button
+              onClick={() => {
+                setShowPayment(false);
+                setSelectedTable(null);
+              }}
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "15px",
+                border: "none",
+                background: "transparent",
+                fontSize: "18px",
+                cursor: "pointer",
+              }}>
+              X
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

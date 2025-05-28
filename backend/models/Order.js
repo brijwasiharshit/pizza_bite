@@ -25,6 +25,10 @@ const OrderItemSchema = new mongoose.Schema({
     required: true,
     enum: ['created', 'in-progress', 'completed', 'cancelled'],
   },
+  method: {
+    type:String
+
+  }
 }, { timestamps: true });
 
 OrderItemSchema.index({ itemId: 1, tableNo: 1 }, { unique: false });

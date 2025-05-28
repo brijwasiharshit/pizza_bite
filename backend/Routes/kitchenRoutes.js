@@ -78,12 +78,15 @@ kitchenRouter.post("/sendBill",(req,res) => {
 })
 kitchenRouter.post("/clearTable/:tableId", async (req, res) => {
   const { tableId } = req.params; 
+  // this is for check payment method
+  const{payment}=req.body
+  // console.log(payment)
 console.log("clear table called!");
   try {
     
       const orders = await OrderItem.updateMany(
           { tableNo: tableId, status: { $ne: "delivered" } }, 
-          { status: "delivered" }  
+          { status: "delivered" ,method:payment} ,  
       );
 
       // Check if any orders were updated

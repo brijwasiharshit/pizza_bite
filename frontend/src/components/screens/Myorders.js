@@ -5,6 +5,7 @@ import "./myorders.css";
 export default function MyOrders() {
   const host = process.env.REACT_APP_HOST;
   const [orders, setOrders] = useState([]);
+ 
   const { tableId } = useParams();
 
   const fetchOrders = async () => {
@@ -23,6 +24,7 @@ export default function MyOrders() {
       console.error("Error fetching orders:", error);
     }
   };
+  console.log(orders)
 
   useEffect(() => {
     fetchOrders();
