@@ -2,8 +2,9 @@ const express = require("express");
 const Order = require("../models/Order");
 const FoodItem = require("../models/FoodItem");
 const Category = require("../models/Category");
-const adminRouter = express.Router();
 const adminAuth = require("../middleware/admin");
+
+const adminRouter = express.Router();
 adminRouter.use(adminAuth);
 // Get sales analytics
 
@@ -22,6 +23,7 @@ const getSevenDaysAgo = () => {
 };
 
 adminRouter.get("/salesToday", async (req, res) => {
+
   try {
     const todayStart = getTodayStart();
     const orders = await Order.find({
