@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { FaWhatsapp } from "react-icons/fa";
 
+
+// Then keep the JSX as is
 import { useNavigate } from "react-router-dom";
 import {
   Check,
@@ -15,6 +17,8 @@ import "./kitchen.css";
 import io from "socket.io-client";
 
 const KitchenDashboard = () => {
+  // Add this with your other state hooks
+const [showPaymentNote, setShowPaymentNote] = useState(false);
   //this state for manageing country code
   const [countryCOde, setCountryCode] = useState("+91");
   // this state for handeling showpopupmessage
@@ -361,174 +365,140 @@ const KitchenDashboard = () => {
 
       {/* Payment modal */}
       {showPayment && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1000,
-          }}>
-          <div
-            style={{
-              backgroundColor: "#FFFDD0",
-              padding: "30px",
-              borderRadius: "10px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
-              position: "relative",
-              width: "300px",
-              textAlign: "center",
-            }}>
-            <h2 style={{ marginBottom: "20px" }}>Choose Payment Method</h2>
+  <div className="payment-modal-overlay">
+    <div className="payment-modal-container">
+      {/* Header with close button */}
+      <div className="payment-modal-header">
+        <h2 className="payment-modal-title">Complete Payment</h2>
+        <button 
+          className="payment-close-btn"
+          onClick={() => {
+            setShowPayment(false);
+            setSelectedTable(null);
+          }}
+          aria-label="Close payment modal"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
 
-            <button
-              onClick={() => {
-                handleClearTable(selectedTable, "cash");
-                setShowPayment(false);
-              }}
-              style={{
-                padding: "10px 15px",
-                margin: "10px",
-                fontSize: "14px",
-                cursor: "pointer",
-                border: "none",
-                borderRadius: "5px",
-                backgroundColor: "orange",
-                color: "white",
-              }}>
-              Pay by Cash
-            </button>
-
-            <button
-              onClick={() => {
-                handleClearTable(selectedTable, "online");
-                setShowPayment(false);
-              }}
-              style={{
-                padding: "10px 15px",
-                margin: "10px",
-                fontSize: "14px",
-                cursor: "pointer",
-                border: "none",
-                borderRadius: "5px",
-                backgroundColor: "orange",
-                color: "white",
-              }}>
-              Pay Online
-            </button>
-
-            <button
-              onClick={() => {
-                setShowPayment(false);
-                setSelectedTable(null);
-              }}
-              style={{
-                position: "absolute",
-                top: "10px",
-                right: "15px",
-                border: "none",
-                background: "transparent",
-                fontSize: "18px",
-                cursor: "pointer",
-              }}>
-              X
-            </button>
+      {/* Payment options */}
+      <div className="payment-options">
+        <button
+          className="payment-option cash-option"
+          onClick={() => {
+            handleClearTable(selectedTable, "cash");
+            setShowPayment(false);
+          }}
+        >
+          <div className="payment-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
           </div>
-        </div>
-      )}
+          <div className="payment-details">
+            <h3>Cash Payment</h3>
+            <p>Pay with physical currency</p>
+          </div>
+          <div className="payment-arrow">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </button>
+
+        <div className="payment-divider">or</div>
+
+        <button
+          className="payment-option online-option"
+          onClick={() => {
+            handleClearTable(selectedTable, "online");
+            setShowPayment(false);
+          }}
+        >
+          <div className="payment-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+          </div>
+          <div className="payment-details">
+            <h3>Digital Payment</h3>
+            <p>UPI, Card, or Wallet</p>
+          </div>
+          <div className="payment-arrow">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </button>
+      </div>
+
+      
+    </div>
+  </div>
+)}
+      
       {/* this is for show whatshapp bill sending */}
-      {showPopup && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1000,
-          }}>
-          <div
-            style={{
-              backgroundColor: "#FFFDD0",
-              padding: "30px",
-              borderRadius: "10px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
-              position: "relative",
-              width: "300px",
-              textAlign: "center",
-            }}>
-            <h2 style={{ marginBottom: "18px" }}>Enter Whatshapp no </h2>
-            <div style={{ display: "flex", gap: "2.5px" }}>
-              <input
-                style={{
-                  padding: "4px 6px",
-                  fontSize: "12px",
-                  width: "60px",
-                }}
-                type="text"
-                placeholder="+91"
-                value={countryCOde}
-                onChange={(e) => setCountryCode(e.target.value)}
-              />
-
-              <input
-                style={{
-                  padding: "4px 6px",
-                  fontSize: "12px",
-                  flex: 1,
-                }}
-                type="text"
-                value={phone}
-                placeholder="eg-9184678789"
-                onChange={(e) => setPhone(e.target.value)}
-              />
-            </div>
-
-            <button
-              onClick={() => {
-                handelSendBill(selectedTable);
-                setShowPopup(false);
-              }}
-              style={{
-                padding: "10px 15px",
-                margin: "10px",
-                fontSize: "14px",
-                cursor: "pointer",
-                border: "none",
-                borderRadius: "5px",
-                backgroundColor: "orange",
-                color: "white",
-              }}>
-              send bill
-            </button>
-            <button
-              onClick={() => {
-                setShowPopup(false);
-              }}
-              style={{
-                padding: "10px 15px",
-                margin: "10px",
-                fontSize: "14px",
-                cursor: "pointer",
-                border: "none",
-                borderRadius: "5px",
-                backgroundColor: "orange",
-                color: "white",
-              }}>
-              cancel{" "}
-            </button>
-          </div>
+   {showPopup && (
+  <div className="whatsapp-modal-overlay">
+    <div className="whatsapp-modal-card">
+      {/* Close button in top-right corner */}
+      <button 
+        className="close-button"
+        onClick={() => setShowPopup(false)}
+        aria-label="Close"
+      >
+        &times;
+      </button>
+      
+      <div className="modal-header">
+        <i className="whatsapp-icon">📱</i>
+        <h2 className="modal-title">Send Bill via WhatsApp</h2>
+    
+      </div>
+      
+      <div className="input-container">
+        <div className="country-code-wrapper">
+          <span className="country-flag">🇮🇳</span>
+          <input
+            className="country-code-input"
+            type="text"
+            placeholder="+91"
+            value={countryCOde}
+            onChange={(e) => setCountryCode(e.target.value)}
+            maxLength="4"
+          />
+          <span className="input-divider"></span>
         </div>
-      )}
+        <input
+          className="phone-number-input"
+          type="tel"
+          value={phone}
+          placeholder="98765 43210"
+          onChange={(e) => setPhone(e.target.value)}
+          pattern="[0-9]{10}"
+        />
+      </div>
+
+      <div className="modal-footer">
+        <button
+          onClick={() => {
+            handelSendBill(selectedTable);
+            setShowPopup(false);
+          }}
+          className="send-button"
+          disabled={!phone}
+          aria-label="Send Bill"
+        >
+          <span>Send Bill</span>
+          <i className="send-icon">→</i>
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 };
