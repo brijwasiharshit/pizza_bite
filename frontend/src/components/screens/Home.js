@@ -1,3 +1,5 @@
+import { FaBottleWater } from "react-icons/fa6";
+
 import React, { useEffect, useState, useRef } from "react";
 import html2canvas from 'html2canvas';
 import Carousel from "../Carousal";
@@ -6,6 +8,7 @@ import { FaArrowUp } from "react-icons/fa";
 import "./home.css";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import AddToWater from "../Cart/AddToWater";
 
 const ThankYouPopup = ({ onClose, tableId }) => {
   return (
@@ -67,6 +70,9 @@ export default function Home() {
     const [notification, setNotification] = useState({ show: false, message: "" });
     const [activeCategory, setActiveCategory] = useState(null);
     const cartRef = useRef(null);
+
+    // this is for showing water cart
+    const [showWaterCart,setShowWaterCart]=useState(false)
 
     const calculateSubtotal = () => {
         return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
@@ -394,8 +400,14 @@ export default function Home() {
                     >
                         🛒 {cart.length > 0 && <span className="cart-count">{cart.reduce((acc, item) => acc + item.quantity, 0)}</span>}
                     </button>
-
-                    {showCart && (
+{/* add water cart */}
+ <button 
+                        className="cart-buttonForWater"
+                        onClick={() => setShowWaterCart(true)}
+                    >
+                        <FaBottleWater />
+ {cart.length > 0 && <span className="cart-count">{cart.reduce((acc, item) => acc + item.quantity, 0)}</span>}
+                    </button>                    {showCart && (
                         <div className="cart-overlay">
                             <div className="modern-cart-modal" ref={cartRef}>
                                 <div className="modern-cart-header">
@@ -507,13 +519,10 @@ export default function Home() {
                             </div>
                         </div>
                     )}
+                    {  showWaterCart&&(<AddToWater/>)}
                     <Footer />
 
-                    {showBackToTop && (
-                        <button className="back-to-top" onClick={scrollToTop}>
-                            <FaArrowUp />
-                        </button>
-                    )}
+                 
                 </>
             )}
         </div>
