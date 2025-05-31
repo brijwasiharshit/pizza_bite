@@ -1,0 +1,161 @@
+/* Orange Cream White Theme */
+.front-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f97316, #f59e0b, #fbbf24);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated Background Elements */
+.background-elements {
+  position: absolute;
+  inset: 0;
+}
+
+.background-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at top right, rgba(251, 191, 36, 0.2), transparent, transparent);
+}
+
+.background-gradient-secondary {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at bottom left, rgba(249, 115, 22, 0.2), transparent, transparent);
+}
+
+/* Floating Particles */
+.particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  animation: pulse 4s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.5); opacity: 0.6; }
+}
+
+/* Loading State */
+.loading-screen {
+  background: linear-gradient(135deg, #ea580c, #f97316, #f59e0b);
+}
+
+.loading-spinner {
+  border: 4px solid #fff7ed;
+  border-top-color: #f97316;
+  animation: spin 1s linear infinite;
+}
+
+/* Error State */
+.error-screen {
+  background: linear-gradient(135deg, #dc2626, #ea580c, #f97316);
+}
+
+.error-icon {
+  background-color: rgba(220, 38, 38, 0.2);
+}
+
+/* Main Content */
+.header-title {
+  background: linear-gradient(to right, #fff, #ffedd5, #fed7aa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.header-divider {
+  background: linear-gradient(to right, #f59e0b, #f97316);
+}
+
+/* Table Cards */
+.table-card {
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 237, 213, 0.3);
+  transition: all 0.3s ease;
+}
+
+.table-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(249, 115, 22, 0.3);
+}
+
+.table-card-occupied {
+  background-color: rgba(220, 38, 38, 0.1);
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+.table-card-selected {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.3), rgba(251, 191, 36, 0.3));
+  border-color: rgba(251, 191, 36, 0.5);
+}
+
+.table-icon {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.table-icon-occupied {
+  background-color: rgba(220, 38, 38, 0.2);
+}
+
+.table-icon-selected {
+  background-color: rgba(249, 115, 22, 0.3);
+}
+
+/* Selection Indicator */
+.selection-indicator {
+  background: linear-gradient(135deg, #f97316, #f59e0b);
+}
+
+/* Loading Overlay */
+.loading-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+.loading-overlay-content {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 237, 213, 0.3);
+}
+
+/* Text Colors */
+.text-primary {
+  color: #fff7ed;
+}
+
+.text-secondary {
+  color: #ffedd5;
+}
+
+.text-accent {
+  color: #fed7aa;
+}
+
+.text-error {
+  color: #fecaca;
+}
+
+/* Animations */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
