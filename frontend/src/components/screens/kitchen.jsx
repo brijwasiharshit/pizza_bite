@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { FaWhatsapp } from "react-icons/fa";
+
 import { useNavigate } from "react-router-dom";
 import {
   Check,
@@ -13,6 +15,12 @@ import "./kitchen.css";
 import io from "socket.io-client";
 
 const KitchenDashboard = () => {
+  //this state for manageing country code
+  const [countryCOde, setCountryCode] = useState("+91");
+  // this state for handeling showpopupmessage
+  const [showPopup, setShowPopup] = useState(false);
+  //this state for store mobile no
+  const [phone, setPhone] = useState("");
   const [orders, setOrders] = useState({});
   const [expandedTables, setExpandedTables] = useState({});
   const [notifications, setNotifications] = useState([]);
@@ -86,6 +94,7 @@ const KitchenDashboard = () => {
     const interval = setInterval(fetchOrders, 5000);
     return () => clearInterval(interval);
   }, [host]);
+  console.log(orders);
 
   const toggleTableExpanded = (tableNumber) => {
     setExpandedTables((prev) => ({
@@ -207,6 +216,39 @@ const KitchenDashboard = () => {
       minute: "2-digit",
     });
   };
+  // this is for creating dynmic bill
+
+  const genrateBill = (tabelNo) => {
+    // this is for extracting tabel order
+    const tabelOrder = orders[tabelNo];
+    if (!tabelOrder || tabelOrder.length === 0) {
+      return `No orders found for Table ${tabelNo}.`;
+    }
+    let message = `🧾 Bill for Table ${tabelNo}:\n\n`;
+    let total = 0;
+    tabelOrder.forEach((order, index) => {
+      const itemLineSum = order.quantity * order.price;
+      // this is for message + add other message
+      message += `${index + 1}. ${order.itemName} (${order.portion}) x${
+        order.quantity
+      } = ₹${itemLineSum}\n`;
+      total += itemLineSum;
+    });
+    message += `\n------------------\nTotal: ₹${total}\nThank you! 🙏`;
+
+    return message;
+  };
+
+  // this function is handeling sendbillonwhatshapp
+
+  const handelSendBill = (selectedTable) => {
+    const mobileNo = countryCOde + phone;
+    const messageForBill = genrateBill(selectedTable);
+    const url = `https://wa.me/${mobileNo}?text=${encodeURIComponent(
+      messageForBill
+    )}`;
+    window.open(url, "_blank");
+  };
 
   return (
     <div className="kitchen-container">
@@ -239,6 +281,18 @@ const KitchenDashboard = () => {
                 </div>
 
                 <div className="table-actions">
+                  {/* this is for sending bill on whatshapp */}
+                  <button
+                    className="clear-table-btn"
+                    onClick={(e) => {
+                      //set tabel no
+                      setSelectedTable(tableNumber);
+                      setShowPopup(true);
+                      setPhone("");
+                    }}
+                    title="send bill on whatshapp">
+                    <FaWhatsapp size={18} style={{ color: "green" }} />
+                  </button>
                   <button
                     className="clear-table-btn"
                     onClick={(e) => {
@@ -383,6 +437,94 @@ const KitchenDashboard = () => {
                 cursor: "pointer",
               }}>
               X
+            </button>
+          </div>
+        </div>
+      )}
+      {/* this is for show whatshapp bill sending */}
+      {showPopup && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+          }}>
+          <div
+            style={{
+              backgroundColor: "#FFFDD0",
+              padding: "30px",
+              borderRadius: "10px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+              position: "relative",
+              width: "300px",
+              textAlign: "center",
+            }}>
+            <h2 style={{ marginBottom: "18px" }}>Enter Whatshapp no </h2>
+            <div style={{ display: "flex", gap: "2.5px" }}>
+              <input
+                style={{
+                  padding: "4px 6px",
+                  fontSize: "12px",
+                  width: "60px",
+                }}
+                type="text"
+                placeholder="+91"
+                value={countryCOde}
+                onChange={(e) => setCountryCode(e.target.value)}
+              />
+
+              <input
+                style={{
+                  padding: "4px 6px",
+                  fontSize: "12px",
+                  flex: 1,
+                }}
+                type="text"
+                value={phone}
+                placeholder="eg-9184678789"
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </div>
+
+            <button
+              onClick={() => {
+                handelSendBill(selectedTable);
+                setShowPopup(false);
+              }}
+              style={{
+                padding: "10px 15px",
+                margin: "10px",
+                fontSize: "14px",
+                cursor: "pointer",
+                border: "none",
+                borderRadius: "5px",
+                backgroundColor: "orange",
+                color: "white",
+              }}>
+              send bill
+            </button>
+            <button
+              onClick={() => {
+                setShowPopup(false);
+              }}
+              style={{
+                padding: "10px 15px",
+                margin: "10px",
+                fontSize: "14px",
+                cursor: "pointer",
+                border: "none",
+                borderRadius: "5px",
+                backgroundColor: "orange",
+                color: "white",
+              }}>
+              cancel{" "}
             </button>
           </div>
         </div>
