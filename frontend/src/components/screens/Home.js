@@ -1,14 +1,10 @@
-import { FaBottleWater } from "react-icons/fa6";
 
 import React, { useEffect, useState, useRef } from "react";
-import html2canvas from 'html2canvas';
 import Carousel from "../Carousal";
 import Footer from "../Footer";
-import { FaArrowUp } from "react-icons/fa";
 import "./home.css";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import axios from "axios";
-import AddToWater from "../Cart/AddToWater";
 
 const ThankYouPopup = ({ onClose, tableId }) => {
   return (
@@ -55,7 +51,6 @@ const ThankYouPopup = ({ onClose, tableId }) => {
 
 export default function Home() {
     const params = useParams();
-    const navigate = useNavigate();
     const tableId = params.tableId;
     const host = process.env.REACT_APP_HOST;
     const [foodCat, setFoodCat] = useState([]);
@@ -63,7 +58,6 @@ export default function Home() {
     const [searchQuery, setSearchQuery] = useState("");
     const [isLoaded, setIsLoaded] = useState(false);
     const [error, setError] = useState(null);
-    const [showBackToTop, setShowBackToTop] = useState(false);
     const [cart, setCart] = useState([]);
     const [showCart, setShowCart] = useState(false);
     const [showThankYou, setShowThankYou] = useState(false);
@@ -71,8 +65,7 @@ export default function Home() {
     const [activeCategory, setActiveCategory] = useState(null);
     const cartRef = useRef(null);
 
-    // this is for showing water cart
-    const [showWaterCart,setShowWaterCart]=useState(false)
+  
 
     const calculateSubtotal = () => {
         return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
@@ -90,95 +83,14 @@ export default function Home() {
         }, 3000);
     };
 
-    const saveImageToGallery = (imageUrl, itemName) => {
-        try {
-            const link = document.createElement('a');
-            link.href = imageUrl;
-            link.download = `${itemName || 'item'}.png`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showNotification(`Saved image of ${itemName}`);
-        } catch (error) {
-            console.error('Error saving image:', error);
-            showNotification('Failed to save image');
-        }
-    };
+   
 
-    const saveReceiptToGallery = async () => {
-        try {
-            if (!cartRef.current) {
-                showNotification('Could not find receipt content');
-                return;
-            }
+   
 
-            const buttons = cartRef.current.querySelectorAll('button');
-            buttons.forEach(btn => btn.style.visibility = 'hidden');
+   
 
-            const canvas = await html2canvas(cartRef.current, {
-                scale: 2,
-                logging: false,
-                useCORS: true,
-                backgroundColor: '#ffffff',
-                scrollY: -window.scrollY
-            });
+  
 
-            buttons.forEach(btn => btn.style.visibility = 'visible');
-
-            if (isMobileDevice()) {
-                await handleMobileSave(canvas);
-            } else {
-                await handleDesktopSave(canvas);
-            }
-
-            showNotification('Receipt saved successfully!');
-        } catch (error) {
-            console.error('Error saving receipt:', error);
-            showNotification('Failed to save receipt');
-        }
-    };
-
-    const isMobileDevice = () => {
-        return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    };
-
-    const handleMobileSave = async (canvas) => {
-        const image = canvas.toDataURL('image/png');
-        
-        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-            const newWindow = window.open();
-            newWindow.document.write(`<img src="${image}" />`);
-        } else {
-            const link = document.createElement('a');
-            link.href = image;
-            link.download = `Receipt_Table_${tableId}_${new Date().toISOString().slice(0,10)}.png`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-    };
-
-    const handleDesktopSave = async (canvas) => {
-        try {
-            if (navigator.clipboard && navigator.clipboard.write) {
-                const blob = await new Promise(resolve => canvas.toBlob(resolve));
-                await navigator.clipboard.write([
-                    new ClipboardItem({ 'image/png': blob })
-                ]);
-                showNotification('Receipt copied to clipboard!');
-            } else {
-                throw new Error('Clipboard API not available');
-            }
-        } catch (err) {
-            console.log('Falling back to download:', err);
-            const link = document.createElement('a');
-            link.href = canvas.toDataURL('image/png');
-            link.download = `Receipt_Table_${tableId}_${new Date().toISOString().slice(0,10)}.png`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-    };
 
     const addToCart = (item, option, price) => {
         const existingItem = cart.find(cartItem => 
@@ -247,9 +159,6 @@ export default function Home() {
         }
     };
 
-    const scrollToTop = () => {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    };
 
     const filteredItems = foodItems.filter(item => 
         item?.name?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -294,14 +203,6 @@ export default function Home() {
         loadData();
     }, [host]);
 
-    useEffect(() => {
-        const handleScroll = () => {
-            setShowBackToTop(window.scrollY > 300);
-        };
-
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
 
     return (
         <div style={{ backgroundColor: "#fffacd", minHeight: "100vh", paddingBottom: "20px" }}>
@@ -400,14 +301,7 @@ export default function Home() {
                     >
                         🛒 {cart.length > 0 && <span className="cart-count">{cart.reduce((acc, item) => acc + item.quantity, 0)}</span>}
                     </button>
-{/* add water cart */}
- <button 
-                        className="cart-buttonForWater"
-                        onClick={() => setShowWaterCart(true)}
-                    >
-                        <FaBottleWater />
- {cart.length > 0 && <span className="cart-count">{cart.reduce((acc, item) => acc + item.quantity, 0)}</span>}
-                    </button>                    {showCart && (
+                {showCart && (
                         <div className="cart-overlay">
                             <div className="modern-cart-modal" ref={cartRef}>
                                 <div className="modern-cart-header">
@@ -519,7 +413,7 @@ export default function Home() {
                             </div>
                         </div>
                     )}
-                    {  showWaterCart&&(<AddToWater/>)}
+                  
                     <Footer />
 
                  

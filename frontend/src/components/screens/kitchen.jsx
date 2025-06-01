@@ -15,10 +15,14 @@ import {
 } from "lucide-react";
 import "./kitchen.css";
 import io from "socket.io-client";
+import PrintBill from "./PrintBill";
 
 const KitchenDashboard = () => {
+  //this is for printing bill
+
+  const [printBill, setPrintBill] = useState(false);
   // Add this with your other state hooks
-const [showPaymentNote, setShowPaymentNote] = useState(false);
+  const [showPaymentNote, setShowPaymentNote] = useState(false);
   //this state for manageing country code
   const [countryCOde, setCountryCode] = useState("+91");
   // this state for handeling showpopupmessage
@@ -301,12 +305,15 @@ const [showPaymentNote, setShowPaymentNote] = useState(false);
                     className="clear-table-btn"
                     onClick={(e) => {
                       e.stopPropagation();
+                      // setPrintBill(true);
+
                       setSelectedTable(tableNumber);
                       setShowPayment(true);
                     }}
                     title="Mark Table as Cleared">
                     <Check size={18} style={{ color: "green" }} />
                   </button>
+                  {printBill && <PrintBill data={orders[tableNumber]} />}
 
                   {expandedTables[tableNumber] ? (
                     <ChevronUp size={20} />
@@ -365,283 +372,182 @@ const [showPaymentNote, setShowPaymentNote] = useState(false);
 
       {/* Payment modal */}
       {showPayment && (
-  <div className="payment-modal-overlay">
-    <div className="payment-modal-container">
-      {/* Header with close button */}
-      <div className="payment-modal-header">
-        <h2 className="payment-modal-title">Complete Payment</h2>
-        <button 
-          className="payment-close-btn"
-          onClick={() => {
-            setShowPayment(false);
-            setSelectedTable(null);
-          }}
-          aria-label="Close payment modal"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
+        <div className="payment-modal-overlay">
+          <div className="payment-modal-container">
+            {/* Header with close button */}
+            <div className="payment-modal-header">
+              <h2 className="payment-modal-title">Complete Payment</h2>
+              <button
+                className="payment-close-btn"
+                onClick={() => {
+                  setShowPayment(false);
+                  setSelectedTable(null);
+                }}
+                aria-label="Close payment modal">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
 
-      {/* Payment options */}
-     <div className="payment-options-container">
-  {/* Cash Payment Option */}
-  <button
-    className="payment-option cash-option"
-    onClick={() => {
-      handleClearTable(selectedTable, "cash");
-      setShowPayment(false);
-    }}
-    onMouseEnter={(e) => e.currentTarget.classList.add('hover-effect')}
-    onMouseLeave={(e) => e.currentTarget.classList.remove('hover-effect')}
-  >
-    <div className="payment-icon-container">
-      <div className="payment-icon-bg cash-bg">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4d7c0f">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-      </div>
-    </div>
-    <div className="payment-content">
-      <h3 className="payment-title">Cash Payment</h3>
-      <p className="payment-description">Pay with physical currency</p>
-    </div>
-    <div className="payment-arrow">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4d7c0f">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
-      </svg>
-    </div>
-    <div className="click-feedback"></div>
-  </button>
+            {/* Payment options */}
+            <div className="payment-options">
+              <button
+                className="payment-option cash-option"
+                onClick={() => {
+                  handleClearTable(selectedTable, "cash");
+                  setShowPayment(false);
+                }}>
+                <div className="payment-icon">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="1.5"
+                      d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
+                </div>
+                <div className="payment-details">
+                  <h3>Cash Payment</h3>
+                  <p>Pay with physical currency</p>
+                </div>
+                <div className="payment-arrow">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </div>
+              </button>
 
-  {/* Divider with Animation */}
-  <div className="payment-divider">
-    <span className="divider-line"></span>
-    <span className="divider-text">or</span>
-    <span className="divider-line"></span>
-  </div>
+              <div className="payment-divider">or</div>
 
-  {/* Online Payment Option */}
-  <button
-    className="payment-option online-option"
-    onClick={() => {
-      handleClearTable(selectedTable, "online");
-      setShowPayment(false);
-    }}
-    onMouseEnter={(e) => e.currentTarget.classList.add('hover-effect')}
-    onMouseLeave={(e) => e.currentTarget.classList.remove('hover-effect')}
-  >
-    <div className="payment-icon-container">
-      <div className="payment-icon-bg online-bg">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-        </svg>
-      </div>
-    </div>
-    <div className="payment-content">
-      <h3 className="payment-title">Digital Payment</h3>
-      <p className="payment-description">UPI, Card, or Wallet</p>
-    </div>
-    <div className="payment-arrow">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
-      </svg>
-    </div>
-    <div className="click-feedback"></div>
-  </button>
-</div>
-
-<style jsx>{`
-  .payment-options-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    width: 100%;
-    max-width: 400px;
-    margin: 0 auto;
-  }
-
-  .payment-option {
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 100%;
-    padding: 1.5rem;
-    border-radius: 1rem;
-    background: white;
-    border: none;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    overflow: hidden;
-  }
-
-  .payment-option.hover-effect {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-  }
-
-  .payment-option:active {
-    transform: scale(0.98);
-  }
-
-  .payment-icon-container {
-    margin-right: 1.5rem;
-  }
-
-  .payment-icon-bg {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    transition: all 0.3s ease;
-  }
-
-  .cash-bg {
-    background-color: #ecfccb;
-  }
-
-  .online-bg {
-    background-color: #dbeafe;
-  }
-
-  .payment-content {
-    flex: 1;
-    text-align: left;
-  }
-
-  .payment-title {
-    margin: 0 0 0.25rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1f2937;
-  }
-
-  .payment-description {
-    margin: 0;
-    font-size: 0.9rem;
-    color: #6b7280;
-  }
-
-  .payment-arrow {
-    margin-left: 1rem;
-    transition: transform 0.3s ease;
-  }
-
-  .payment-option:hover .payment-arrow {
-    transform: translateX(3px);
-  }
-
-  .payment-divider {
-    display: flex;
-    align-items: center;
-    margin: 0.5rem 0;
-  }
-
-  .divider-line {
-    flex: 1;
-    height: 1px;
-    background-color: #e5e7eb;
-  }
-
-  .divider-text {
-    padding: 0 1rem;
-    color: #9ca3af;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-  }
-
-  .click-feedback {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255,255,255,0.3);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .payment-option:active .click-feedback {
-    opacity: 1;
-    transition: none;
-  }
-
-  /* Animation for click effect */
-  @keyframes ripple {
-    to {
-      transform: scale(4);
-      opacity: 0;
-    }
-  }
-`}</style>
-      
-    </div>
-  </div>
-)}
-      
-      {/* this is for show whatshapp bill sending */}
-   {showPopup && (
-  <div className="whatsapp-modal-overlay">
-    <div className="whatsapp-modal-card">
-      {/* Close button in top-right corner */}
-      <button 
-        className="close-button"
-        onClick={() => setShowPopup(false)}
-        aria-label="Close"
-      >
-        &times;
-      </button>
-      
-      <div className="modal-header">
-        <i className="whatsapp-icon">📱</i>
-        <h2 className="modal-title">Send Bill via WhatsApp</h2>
-    
-      </div>
-      
-      <div className="input-container">
-        <div className="country-code-wrapper">
-          <span className="country-flag">🇮🇳</span>
-          <input
-            className="country-code-input"
-            type="text"
-            placeholder="+91"
-            value={countryCOde}
-            onChange={(e) => setCountryCode(e.target.value)}
-            maxLength="4"
-          />
-          <span className="input-divider"></span>
+              <button
+                className="payment-option online-option"
+                onClick={() => {
+                  handleClearTable(selectedTable, "online");
+                  setShowPayment(false);
+                }}>
+                <div className="payment-icon">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="1.5"
+                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                    />
+                  </svg>
+                </div>
+                <div className="payment-details">
+                  <h3>Digital Payment</h3>
+                  <p>UPI, Card, or Wallet</p>
+                </div>
+                <div className="payment-arrow">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </div>
+              </button>
+            </div>
+          </div>
         </div>
-        <input
-          className="phone-number-input"
-          type="tel"
-          value={phone}
-          placeholder="98765 43210"
-          onChange={(e) => setPhone(e.target.value)}
-          pattern="[0-9]{10}"
-        />
-      </div>
+      )}
 
-      <div className="modal-footer">
-        <button
-          onClick={() => {
-            handelSendBill(selectedTable);
-            setShowPopup(false);
-          }}
-          className="send-button"
-          disabled={!phone}
-          aria-label="Send Bill"
-        >
-          <span>Send Bill</span>
-          <i className="send-icon">→</i>
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      {/* this is for show whatshapp bill sending */}
+      {showPopup && (
+        <div className="whatsapp-modal-overlay">
+          <div className="whatsapp-modal-card">
+            {/* Close button in top-right corner */}
+            <button
+              className="close-button"
+              onClick={() => setShowPopup(false)}
+              aria-label="Close">
+              &times;
+            </button>
+
+            <div className="modal-header">
+              <i className="whatsapp-icon">📱</i>
+              <h2 className="modal-title">Send Bill via WhatsApp</h2>
+            </div>
+
+            <div className="input-container">
+              <div className="country-code-wrapper">
+                <span className="country-flag">🇮🇳</span>
+                <input
+                  className="country-code-input"
+                  type="text"
+                  placeholder="+91"
+                  value={countryCOde}
+                  onChange={(e) => setCountryCode(e.target.value)}
+                  maxLength="4"
+                />
+                <span className="input-divider"></span>
+              </div>
+              <input
+                className="phone-number-input"
+                type="tel"
+                value={phone}
+                placeholder="98765 43210"
+                onChange={(e) => setPhone(e.target.value)}
+                pattern="[0-9]{10}"
+              />
+            </div>
+
+            <div className="modal-footer">
+              <button
+                onClick={() => {
+                  handelSendBill(selectedTable);
+                  setShowPopup(false);
+                }}
+                className="send-button"
+                disabled={!phone}
+                aria-label="Send Bill">
+                <span>Send Bill</span>
+                <i className="send-icon">→</i>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
