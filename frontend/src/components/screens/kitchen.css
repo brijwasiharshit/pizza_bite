@@ -1,7 +1,7 @@
 /* Kitchen Dashboard CSS - Professional Theme */
 :root {
-  --primary-color: #B2B5E0; /* Dark blue-gray */
-  --secondary-color: #e67e22; /* Orange */
+  --primary-color: #FBC9CF; /* Dark blue-gray */
+  --secondary-color: #8b5cf6; /* Orange */
   --accent-color: #27ae60; /* Green */
   --light-bg: #f9f9f9;
   --dark-text: #2c3e50;
@@ -29,63 +29,186 @@ body {
   margin: 0 auto;
 }
 
-/* Header */
+/* Kitchen Header - Premium Styling */
 .kitchen-header {
-  background-color: var(--primary-color);
+  background: linear-gradient(135deg, #401664, #401664);
   color: white;
-  padding: 15px 20px;
-  border-radius: var(--border-radius);
-  margin-bottom: 25px;
-  box-shadow: var(--box-shadow);
+  padding: 18px 30px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 30px rgba(255, 82, 0, 0.3);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+   --light-bg: #f9f9f9;
+}
+
+.kitchen-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  transform: rotate(30deg);
+  pointer-events: none;
 }
 
 .kitchen-header h1 {
   margin: 0;
-  font-size: 1.8rem;
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(to right, #fff, #ffd8c2);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-/* Notifications */
-.notifications {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 1000;
+.kitchen-header .header-actions {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.notification {
-  padding: 12px 20px;
-  border-radius: var(--border-radius);
-  background-color: var(--primary-color);
-  color: white;
-  box-shadow: var(--box-shadow);
-  animation: slideIn 0.3s ease-out;
-  max-width: 300px;
-  display: flex;
+  gap: 15px;
   align-items: center;
 }
 
+/* Notifications - Premium Styling */
+.notifications {
+  position: fixed;
+  top: 25px;
+  right: 25px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.notification {
+  padding: 16px 24px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  color: white;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  animation: slideIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  max-width: 350px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  transform-origin: right center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.notification::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+  background: currentColor;
+}
+
 .notification.success {
-  background-color: var(--success-color);
+  color: #a0e9a0;
 }
 
 .notification.error {
-  background-color: var(--warning-color);
+  color: #ff9e9e;
 }
 
+.notification .icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.notification .content {
+  flex: 1;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.notification .close-btn {
+  background: transparent;
+  border: none;
+  color: inherit;
+  opacity: 0.7;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  margin-left: 10px;
+  padding: 5px;
+}
+
+.notification .close-btn:hover {
+  opacity: 1;
+}
+
+/* Animations */
 @keyframes slideIn {
   from {
-    transform: translateX(100%);
+    transform: translateX(30px) scale(0.95);
     opacity: 0;
   }
   to {
-    transform: translateX(0);
+    transform: translateX(0) scale(1);
     opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 82, 0, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 82, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 82, 0, 0);
+  }
+}
+
+/* Hover Effects */
+.kitchen-header:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 35px rgba(255, 82, 0, 0.4);
+}
+
+.notification:hover {
+  transform: translateX(-5px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .kitchen-header {
+    padding: 15px 20px;
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+  
+  .kitchen-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .notifications {
+    top: 15px;
+    right: 15px;
+    max-width: 90%;
+  }
+  
+  .notification {
+    max-width: 280px;
+    padding: 14px 18px;
   }
 }
 
@@ -120,9 +243,7 @@ body {
   transition: var(--transition);
 }
 
-.table-header:hover {
-  background-color: #34495e;
-}
+
 
 .table-info {
   display: flex;

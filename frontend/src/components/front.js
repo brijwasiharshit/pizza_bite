@@ -10,13 +10,13 @@ const useStyles = createUseStyles({
     minHeight: "100vh",
     background: "#F5F5F0", // Soft cream background
     fontFamily: "'Playfair Display', serif",
-    padding: "2rem",
+    
     position: "relative",
     overflow: "hidden",
     "&::before": {
       content: '""',
       position: "absolute",
-      top: 0,
+      top: -1,
       left: 0,
       right: 0,
       height: "40%",
@@ -81,7 +81,7 @@ const useStyles = createUseStyles({
     },
   },
   tableButton: {
-    padding: "1.8rem 0.5rem",
+    
     fontSize: "1.5rem",
     fontWeight: "600",
     background: "#FFFDF7",
@@ -159,6 +159,16 @@ const useStyles = createUseStyles({
       right: "-30px",
     },
   },
+  selectHeading: {
+    fontSize: "2rem",
+    marginBottom: "2rem",
+    color: "#5A4A42",
+    fontWeight: 500,
+    "@media (max-width: 768px)": {
+      fontSize: "1.7rem",
+      marginBottom: "1.5rem",
+    },
+  },
 });
 
 const Front = () => {
@@ -203,7 +213,7 @@ const Front = () => {
     return (
       <div className={classes.container}>
         <div className={classes.content}>
-          <h1 className={classes.title}>Baba neem karoli restro and cafe Lounge</h1>
+   
           <p className={classes.loadingMessage}>Preparing your experience...</p>
         </div>
       </div>
@@ -214,7 +224,6 @@ const Front = () => {
     return (
       <div className={classes.container}>
         <div className={classes.content}>
-          <h1 className={classes.title}>Baba neem karoli restro and cafe Lounge</h1>
           <p className={classes.errorMessage}>{error}</p>
           <p className={classes.fallbackMessage}>Default tables loaded</p>
         </div>
@@ -228,8 +237,8 @@ const Front = () => {
       <div className={classes.decorativeElement} />
 
       <div className={classes.content}>
-      
-
+        <h2 className={classes.selectHeading}>Please Select Your Table</h2>
+        
         <div className={classes.buttonGrid}>
           {tables.map((table) => (
             <button
