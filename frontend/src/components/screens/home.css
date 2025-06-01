@@ -471,31 +471,14 @@
 /* Cart button adjustments for mobile */
 .cart-button {
     position: fixed;
-    bottom: 200px;
+    bottom: 40px;
     right: 20px;
     color: white;
     border: none;
     width: 50px;
     height: 50px;
-    border-radius: 50%;
-    font-size: 20px;
-    cursor: pointer;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-}
-/* cartbuttonforwater */
-.cart-buttonForWater {
-    position: fixed;
-    bottom: 90px;
-    right: 20px;
-    /* background-color: #FF5E00; */
-    color: white;
-    border: none;
-    width: 50px;
-    height: 50px;
+        background-color: orange; /* Emerald */
+
     border-radius: 50%;
     font-size: 20px;
     cursor: pointer;
@@ -1092,22 +1075,8 @@
     cursor: pointer;
     transition: background-color 0.2s ease, transform 0.2s ease;
 }
-.cart-buttonForWater {
-    width: 60px;
-    height: 60px;
-    font-size: 24px;
-    background-color: #3182ce; /* Emerald */
-    color: white;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.2s ease;
-}
 
-.cart-button:hover {
-    background-color: #059669;
-    transform: scale(1.05);
-}
+
 }
 
 @media (min-width: 1024px) {
