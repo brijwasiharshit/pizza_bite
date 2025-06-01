@@ -110,7 +110,7 @@ export default function AddItems() {
     try {
       const payload = buildPayload();
 
-      await axios.post(`${host}/api/admin/addfooditem`, payload, {
+      await axios.post(`${host}/api/kitchen/addfooditem`, payload, {
         withCredentials: true,
         headers: { "Content-Type": "application/json" },
       });

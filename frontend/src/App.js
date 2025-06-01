@@ -67,10 +67,10 @@ function App() {
                 <Route path="/thanks" element={<Thanks />} />
                 <Route path="/kitchen" element={<AdminPanel />} />
                 <Route path="/last" element={<Last />} />
-                <Route path="/admin/items" element={<AdminLayout />}>
+                <Route path="/kitchen/items" element={<AdminLayout />}>
               
                   <Route index element={<AddItems />} />
-                  <Route path="/admin/items/deleteItems" element={<DeleteItems />}
+                  <Route path="/kitchen/items/deleteItems" element={<DeleteItems />}
                   />
                 </Route>
               </Routes>

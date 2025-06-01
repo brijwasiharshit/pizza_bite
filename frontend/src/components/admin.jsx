@@ -13,8 +13,8 @@ import {
 } from "chart.js";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { NavLink, useNavigate } from "react-router-dom";
-// import AddFoodItms from "./AddItem";
+import { useNavigate } from "react-router-dom";
+import "./screens/admins.css";
 
 ChartJS.register(
   CategoryScale,
@@ -33,61 +33,38 @@ const Analytics = () => {
   const [salesData, setSalesData] = useState(null);
   const [error, setError] = useState(null);
 
-  // // creating state for add items
-  // const [addItemButton, setAddItemButton] = useState(false);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [
           salesTodayRes,
-          weeklyTrendRes,
+          weeklySales,
           totalMonthlySales,
           totalMonthlySalesOnline,
-          totalOrdersRes,
-          avgOrderValueRes,
         ] = await Promise.all([
           axios.get(`${host}/api/admin/salesToday`, { withCredentials: true }),
-          axios.get(`${host}/api/admin/oneWeekComparison`, {
-            withCredentials: true,
-          }),
-          // fetch monthly cash sales
+          axios.get(`${host}/api/admin/weeklySales`, { withCredentials: true }),
           axios.get(`${host}/api/admin/monthlySales`, {
             withCredentials: true,
           }),
-          // fetch monthly online sales
           axios.get(`${host}/api/admin/monthlySalesOnline`, {
             withCredentials: true,
           }),
-          axios.get(`${host}/api/admin/totalOrders`, { withCredentials: true }),
-          axios.get(`${host}/api/admin/avgOrderValue`, {
-            withCredentials: true,
-          }),
         ]);
-        // console.log(totalMonthlySales);
+
+        const weekelySalesInCash = weeklySales.data.weekelySalesInCash;
+        const weekelySalesInOnline = weeklySales.data.weekelySalesInOnline;
         const monthlySales = totalMonthlySales.data.totalSalesMonthly;
-        // console.log(monthlySales);
-
-        // monthlysales in online
-
         const monthlySalesOnline =
           totalMonthlySalesOnline.data.totalSalesMonthlyonline;
-        // console.log(totalMonthlySalesOnline);
-
-        const trendData = weeklyTrendRes.data.salesLast7Days;
-        const dates = trendData.map((d) => d.date); // e.g., ["2025-05-09", ...]
-        const dailySales = trendData.map((d) => d.totalSales);
-        const totalWeekSales = dailySales.reduce((a, b) => a + b, 0);
 
         setSalesData({
+          weekelySalesInCash,
+          weekelySalesInOnline,
           monthlySales,
           monthlySalesOnline,
-          todaySales: salesTodayRes.data.totalSalesToday,
-          weeklySales: totalWeekSales,
-          totalOrders: totalOrdersRes.data.totalOrders,
-          avgOrderValue: avgOrderValueRes.data.avgOrderValue,
-          dates,
-          dailySales,
+          todaySalesInCash: salesTodayRes.data.totalSalesTodayInCash,
+          todaySalesInOnline: salesTodayRes.data.totalSalesTodayInOnline,
         });
 
         setError(null);
@@ -135,131 +112,92 @@ const Analytics = () => {
   }
 
   return (
-    <div
-      className="container-fluid py-4"
-      style={{ fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" }}>
-      {/* Header Row: Title + Items Link */}
+    <div className="container-fluid analytics-container">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1 className="h2 fw-bold text-primary">
           <i className="bi bi-graph-up me-2"></i>
           Sales Dashboard
         </h1>
-        <NavLink to="/admin/items" className="btn btn-outline-primary">
-          Items
-        </NavLink>
       </div>
 
-      {/* Sales Metrics Cards */}
       <div className="row mb-4">
-        {/* Today's Sales */}
         <div className="col-md-3 mb-3">
           <div className="card h-100 border-0 shadow-sm">
             <div className="card-body d-flex justify-content-between align-items-center">
               <div>
-                <h6 className="text-muted mb-2">Today's Sales</h6>
-                <h3 className="mb-0">
-                  ₹{(salesData?.todaySales || 0).toLocaleString()}
+                <h6>Today's Sales</h6>
+                <span className="text-sm">Cash</span>
+                <h3 className="text-success">₹{salesData.todaySalesInCash}</h3>
+                <span className="text-sm">Online</span>
+                <h3 className="text-primary">
+                  ₹{salesData.todaySalesInOnline}
                 </h3>
               </div>
-              <div className="bg-primary bg-opacity-10 p-3 rounded">
-                <i className="bi bi-currency-rupee text-primary fs-4"></i>
+              <div className="icon-wrapper icon-primary">
+                <i className="bi bi-currency-rupee fs-4"></i>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Weekly Sales */}
         <div className="col-md-3 mb-3">
           <div className="card h-100 border-0 shadow-sm">
             <div className="card-body d-flex justify-content-between align-items-center">
               <div>
-                <h6 className="text-muted mb-2">Weekly Sales</h6>
-                <h3 className="mb-0">
-                  ₹{(salesData?.weeklySales || 0).toLocaleString()}
+                <h6>Weekly Sales</h6>
+                <span className="text-sm">Cash</span>
+                <h3 className="text-success">
+                  ₹{salesData.weekelySalesInCash}
+                </h3>
+                <span className="text-sm">Online</span>
+                <h3 className="text-primary">
+                  ₹{salesData.weekelySalesInOnline}
                 </h3>
               </div>
-              <div className="bg-success bg-opacity-10 p-3 rounded">
-                <i className="bi bi-calendar-week text-success fs-4"></i>
+              <div className="icon-wrapper icon-success">
+                <i className="bi bi-calendar-week fs-4"></i>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Total Orders */}
         <div className="col-md-3 mb-3">
           <div className="card h-100 border-0 shadow-sm">
             <div className="card-body d-flex justify-content-between align-items-center">
               <div>
-                <h6 className="text-muted mb-2">Total Orders</h6>
-                <h3 className="mb-0">
-                  {(salesData?.totalOrders || 0).toLocaleString()}
-                </h3>
+                <h6>Monthly Sales By Cash</h6>
+                <h3>₹{(salesData?.monthlySales || 0).toLocaleString()}</h3>
               </div>
-              <div className="bg-warning bg-opacity-10 p-3 rounded">
-                <i className="bi bi-cart-check text-warning fs-4"></i>
+              <div className="icon-wrapper icon-success">
+                <i className="bi bi-calendar-week fs-4"></i>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Avg Order Value */}
         <div className="col-md-3 mb-3">
           <div className="card h-100 border-0 shadow-sm">
             <div className="card-body d-flex justify-content-between align-items-center">
               <div>
-                <h6 className="text-muted mb-2">Avg. Order Value</h6>
-                <h3 className="mb-0">
-                  ₹{(salesData?.avgOrderValue || 0).toLocaleString()}
-                </h3>
-              </div>
-              <div className="bg-info bg-opacity-10 p-3 rounded">
-                <i className="bi bi-graph-up text-info fs-4"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Monthly Sales in cash */}
-        <div className="col-md-3 mb-3">
-          <div className="card h-100 border-0 shadow-sm">
-            <div className="card-body d-flex justify-content-between align-items-center">
-              <div>
-                <h6 className="text-muted mb-2">Monthly Sales By Cash</h6>
-                <h3 className="mb-0">
-                  ₹{(salesData?.monthlySales || 0).toLocaleString()}
-                </h3>
-              </div>
-              <div className="bg-success bg-opacity-10 p-3 rounded">
-                <i className="bi bi-calendar-week text-success fs-4"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* total sales in online */}
-        <div className="col-md-3 mb-3">
-          <div className="card h-100 border-0 shadow-sm">
-            <div className="card-body d-flex justify-content-between align-items-center">
-              <div>
-                <h6 className="text-muted mb-2">Monthly Sales By Online</h6>
-                <h3 className="mb-0">
+                <h6>Monthly Sales By Online</h6>
+                <h3>
                   ₹{(salesData?.monthlySalesOnline || 0).toLocaleString()}
                 </h3>
               </div>
-              <div className="bg-success bg-opacity-10 p-3 rounded">
-                <i className="bi bi-calendar-week text-success fs-4"></i>
+              <div className="icon-wrapper icon-success">
+                <i className="bi bi-calendar-week fs-4"></i>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Sales Trend Chart */}
       <div className="row">
         <div className="col-12">
           <div className="card border-0 shadow-sm">
             <div className="card-body">
               <h5 className="card-title mb-4">7-Day Sales Trend</h5>
-              <div style={{ height: "400px" }}>
+              <div className="chart-container">
                 <Line
                   data={chartData}
                   options={{
@@ -300,6 +238,5 @@ const Analytics = () => {
       </div>
     </div>
   );
-}
-
+};
 export default Analytics;
