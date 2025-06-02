@@ -20,7 +20,7 @@ const io = new Server(server, {
   cors: {
     origin: [
       "http://localhost:3000",
-      "https://pizza-bite-frontend.onrender.com"
+      "https://neeb-karoli-fe.onrender.com"
     ],
     methods: ["GET", "POST"],
     credentials: true,
@@ -42,7 +42,7 @@ app.set("io", io);
 const corsOptions = {
   origin: [
     "http://localhost:3000",
-    // "https://pizza-bite-frontend.onrender.com"
+    "https://neeb-karoli-fe.onrender.com"
   ],
   credentials: true,
   optionsSuccessStatus: 200,
