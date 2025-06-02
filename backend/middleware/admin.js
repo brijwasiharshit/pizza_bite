@@ -4,7 +4,7 @@ const User = require('../models/User');
 require('dotenv').config();
 
 const adminAuth = async (req, res, next) => {
-  
+  console.log("admin Called!");
   const { token } = req.cookies;
   console.log("token", token);
   if (!token) {
