@@ -1,30 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Line } from "react-chartjs-2";
 import axios from "axios";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { NavLink, useNavigate } from "react-router-dom";
-// import AddFoodItms from "./AddItem";
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
+import { useNavigate } from "react-router-dom";
 
 const Analytics = () => {
   const navigate = useNavigate();
@@ -32,62 +10,40 @@ const Analytics = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [salesData, setSalesData] = useState(null);
   const [error, setError] = useState(null);
-
-  // // creating state for add items
-  // const [addItemButton, setAddItemButton] = useState(false);
+  const [timeRange, setTimeRange] = useState("week"); // 'day', 'week', or 'month'
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [
           salesTodayRes,
-          weeklyTrendRes,
+          weeklySales,
           totalMonthlySales,
           totalMonthlySalesOnline,
-          totalOrdersRes,
-          avgOrderValueRes,
         ] = await Promise.all([
           axios.get(`${host}/api/admin/salesToday`, { withCredentials: true }),
-          axios.get(`${host}/api/admin/oneWeekComparison`, {
-            withCredentials: true,
-          }),
-          // fetch monthly cash sales
+          axios.get(`${host}/api/admin/weeklySales`, { withCredentials: true }),
           axios.get(`${host}/api/admin/monthlySales`, {
             withCredentials: true,
           }),
-          // fetch monthly online sales
           axios.get(`${host}/api/admin/monthlySalesOnline`, {
             withCredentials: true,
           }),
-          axios.get(`${host}/api/admin/totalOrders`, { withCredentials: true }),
-          axios.get(`${host}/api/admin/avgOrderValue`, {
-            withCredentials: true,
-          }),
         ]);
-        // console.log(totalMonthlySales);
+
+        const weekelySalesInCash = weeklySales.data.weekelySalesInCash;
+        const weekelySalesInOnline = weeklySales.data.weekelySalesInOnline;
         const monthlySales = totalMonthlySales.data.totalSalesMonthly;
-        // console.log(monthlySales);
-
-        // monthlysales in online
-
         const monthlySalesOnline =
           totalMonthlySalesOnline.data.totalSalesMonthlyonline;
-        // console.log(totalMonthlySalesOnline);
-
-        const trendData = weeklyTrendRes.data.salesLast7Days;
-        const dates = trendData.map((d) => d.date); // e.g., ["2025-05-09", ...]
-        const dailySales = trendData.map((d) => d.totalSales);
-        const totalWeekSales = dailySales.reduce((a, b) => a + b, 0);
 
         setSalesData({
+          weekelySalesInCash,
+          weekelySalesInOnline,
           monthlySales,
           monthlySalesOnline,
-          todaySales: salesTodayRes.data.totalSalesToday,
-          weeklySales: totalWeekSales,
-          totalOrders: totalOrdersRes.data.totalOrders,
-          avgOrderValue: avgOrderValueRes.data.avgOrderValue,
-          dates,
-          dailySales,
+          todaySalesInCash: salesTodayRes.data.totalSalesTodayInCash,
+          todaySalesInOnline: salesTodayRes.data.totalSalesTodayInOnline,
         });
 
         setError(null);
@@ -102,25 +58,22 @@ const Analytics = () => {
     fetchData();
   }, [navigate, host]);
 
-  const chartData = {
-    labels: salesData?.dates || [],
-    datasets: [
-      {
-        label: "Daily Sales (₹)",
-        data: salesData?.dailySales || [],
-        borderColor: "#4f46e5",
-        backgroundColor: "rgba(79, 70, 229, 0.1)",
-        tension: 0.4,
-        fill: true,
-      },
-    ],
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(amount).replace('₹', '₹');
   };
 
   if (isLoading) {
     return (
-      <div className="d-flex justify-content-center align-items-center vh-100">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
+      <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
+        <div className="text-center">
+          <div className="spinner-border text-primary mb-3" style={{width: '3rem', height: '3rem'}} role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <h5 className="text-muted">Loading Dashboard...</h5>
         </div>
       </div>
     );
@@ -129,170 +82,224 @@ const Analytics = () => {
   if (error) {
     return (
       <div className="container-fluid py-4">
-        <div className="alert alert-danger">{error}</div>
+        <div className="alert alert-danger d-flex align-items-center" role="alert">
+          <i className="bi bi-exclamation-triangle-fill me-2"></i>
+          <div>{error}</div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div
-      className="container-fluid py-4"
-      style={{ fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" }}>
-      {/* Header Row: Title + Items Link */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1 className="h2 fw-bold text-primary">
-          <i className="bi bi-graph-up me-2"></i>
-          Sales Dashboard
-        </h1>
-        <NavLink to="/admin/items" className="btn btn-outline-primary">
-          Items
-        </NavLink>
+    <div className="container-fluid px-4 py-3 bg-light" style={{minHeight: '100vh'}}>
+      {/* Header */}
+      <div className="d-flex justify-content-between align-items-center mb-4 pt-3">
+        <div>
+          <h1 className="h3 fw-bold text-dark mb-1">
+            <i className="bi bi-graph-up me-2"></i>
+            Sales Analytics
+          </h1>
+          <p className="text-muted small mb-0">Track and analyze your sales performance</p>
+        </div>
+    
       </div>
 
-      {/* Sales Metrics Cards */}
-      <div className="row mb-4">
+      {/* Summary Cards */}
+      <div className="row g-4">
         {/* Today's Sales */}
-        <div className="col-md-3 mb-3">
-          <div className="card h-100 border-0 shadow-sm">
-            <div className="card-body d-flex justify-content-between align-items-center">
-              <div>
-                <h6 className="text-muted mb-2">Today's Sales</h6>
-                <h3 className="mb-0">
-                  ₹{(salesData?.todaySales || 0).toLocaleString()}
-                </h3>
-              </div>
-              <div className="bg-primary bg-opacity-10 p-3 rounded">
-                <i className="bi bi-currency-rupee text-primary fs-4"></i>
+        <div className="col-xl-4 col-md-6">
+          <div className="card border-0 shadow-sm h-100">
+            <div className="card-body">
+              <div className="d-flex justify-content-between align-items-start">
+                <div>
+                  <h6 className="text-uppercase text-muted mb-3 fw-bold small">Today's Sales</h6>
+                  <div className="d-flex align-items-center mb-3">
+                    <span className="badge bg-success bg-opacity-10 text-success p-2 me-2">
+                      <i className="bi bi-cash-coin"></i>
+                    </span>
+                    <div>
+                      <p className="text-muted small mb-0">Cash</p>
+                      <h4 className="mb-0 text-success">{formatCurrency(salesData.todaySalesInCash)}</h4>
+                    </div>
+                  </div>
+                  <div className="d-flex align-items-center mb-3">
+                    <span className="badge bg-primary bg-opacity-10 text-primary p-2 me-2">
+                      <i className="bi bi-credit-card"></i>
+                    </span>
+                    <div>
+                      <p className="text-muted small mb-0">Online</p>
+                      <h4 className="mb-0 text-primary">{formatCurrency(salesData.todaySalesInOnline)}</h4>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-2 border-top">
+                    <p className="text-muted small mb-1">Total Sales</p>
+                    <h3 className="mb-0">
+                      {formatCurrency(salesData.todaySalesInCash + salesData.todaySalesInOnline)}
+                    </h3>
+                  </div>
+                </div>
+                <div className="icon-shape bg-primary bg-opacity-10 text-primary rounded-3 p-3">
+                  <i className="bi bi-currency-rupee fs-4"></i>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Weekly Sales */}
-        <div className="col-md-3 mb-3">
-          <div className="card h-100 border-0 shadow-sm">
-            <div className="card-body d-flex justify-content-between align-items-center">
-              <div>
-                <h6 className="text-muted mb-2">Weekly Sales</h6>
-                <h3 className="mb-0">
-                  ₹{(salesData?.weeklySales || 0).toLocaleString()}
-                </h3>
-              </div>
-              <div className="bg-success bg-opacity-10 p-3 rounded">
-                <i className="bi bi-calendar-week text-success fs-4"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Total Orders */}
-        <div className="col-md-3 mb-3">
-          <div className="card h-100 border-0 shadow-sm">
-            <div className="card-body d-flex justify-content-between align-items-center">
-              <div>
-                <h6 className="text-muted mb-2">Total Orders</h6>
-                <h3 className="mb-0">
-                  {(salesData?.totalOrders || 0).toLocaleString()}
-                </h3>
-              </div>
-              <div className="bg-warning bg-opacity-10 p-3 rounded">
-                <i className="bi bi-cart-check text-warning fs-4"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Avg Order Value */}
-        <div className="col-md-3 mb-3">
-          <div className="card h-100 border-0 shadow-sm">
-            <div className="card-body d-flex justify-content-between align-items-center">
-              <div>
-                <h6 className="text-muted mb-2">Avg. Order Value</h6>
-                <h3 className="mb-0">
-                  ₹{(salesData?.avgOrderValue || 0).toLocaleString()}
-                </h3>
-              </div>
-              <div className="bg-info bg-opacity-10 p-3 rounded">
-                <i className="bi bi-graph-up text-info fs-4"></i>
+        <div className="col-xl-4 col-md-6">
+          <div className="card border-0 shadow-sm h-100">
+            <div className="card-body">
+              <div className="d-flex justify-content-between align-items-start">
+                <div>
+                  <h6 className="text-uppercase text-muted mb-3 fw-bold small">Weekly Sales</h6>
+                  <div className="d-flex align-items-center mb-3">
+                    <span className="badge bg-success bg-opacity-10 text-success p-2 me-2">
+                      <i className="bi bi-cash-coin"></i>
+                    </span>
+                    <div>
+                      <p className="text-muted small mb-0">Cash</p>
+                      <h4 className="mb-0 text-success">{formatCurrency(salesData.weekelySalesInCash)}</h4>
+                    </div>
+                  </div>
+                  <div className="d-flex align-items-center mb-3">
+                    <span className="badge bg-primary bg-opacity-10 text-primary p-2 me-2">
+                      <i className="bi bi-credit-card"></i>
+                    </span>
+                    <div>
+                      <p className="text-muted small mb-0">Online</p>
+                      <h4 className="mb-0 text-primary">{formatCurrency(salesData.weekelySalesInOnline)}</h4>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-2 border-top">
+                    <p className="text-muted small mb-1">Total Sales</p>
+                    <h3 className="mb-0">
+                      {formatCurrency(salesData.weekelySalesInCash + salesData.weekelySalesInOnline)}
+                    </h3>
+                  </div>
+                </div>
+                <div className="icon-shape bg-success bg-opacity-10 text-success rounded-3 p-3">
+                  <i className="bi bi-calendar-week fs-4"></i>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Monthly Sales in cash */}
-        <div className="col-md-3 mb-3">
-          <div className="card h-100 border-0 shadow-sm">
-            <div className="card-body d-flex justify-content-between align-items-center">
-              <div>
-                <h6 className="text-muted mb-2">Monthly Sales By Cash</h6>
-                <h3 className="mb-0">
-                  ₹{(salesData?.monthlySales || 0).toLocaleString()}
-                </h3>
-              </div>
-              <div className="bg-success bg-opacity-10 p-3 rounded">
-                <i className="bi bi-calendar-week text-success fs-4"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* total sales in online */}
-        <div className="col-md-3 mb-3">
-          <div className="card h-100 border-0 shadow-sm">
-            <div className="card-body d-flex justify-content-between align-items-center">
-              <div>
-                <h6 className="text-muted mb-2">Monthly Sales By Online</h6>
-                <h3 className="mb-0">
-                  ₹{(salesData?.monthlySalesOnline || 0).toLocaleString()}
-                </h3>
-              </div>
-              <div className="bg-success bg-opacity-10 p-3 rounded">
-                <i className="bi bi-calendar-week text-success fs-4"></i>
+        {/* Monthly Sales */}
+        <div className="col-xl-4 col-md-6">
+          <div className="card border-0 shadow-sm h-100">
+            <div className="card-body">
+              <div className="d-flex justify-content-between align-items-start">
+                <div>
+                  <h6 className="text-uppercase text-muted mb-3 fw-bold small">Monthly Sales</h6>
+                  <div className="d-flex align-items-center mb-3">
+                    <span className="badge bg-success bg-opacity-10 text-success p-2 me-2">
+                      <i className="bi bi-cash-coin"></i>
+                    </span>
+                    <div>
+                      <p className="text-muted small mb-0">Cash</p>
+                      <h4 className="mb-0 text-success">{formatCurrency(salesData.monthlySales)}</h4>
+                    </div>
+                  </div>
+                  <div className="d-flex align-items-center mb-3">
+                    <span className="badge bg-primary bg-opacity-10 text-primary p-2 me-2">
+                      <i className="bi bi-credit-card"></i>
+                    </span>
+                    <div>
+                      <p className="text-muted small mb-0">Online</p>
+                      <h4 className="mb-0 text-primary">{formatCurrency(salesData.monthlySalesOnline)}</h4>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-2 border-top">
+                    <p className="text-muted small mb-1">Total Sales</p>
+                    <h3 className="mb-0">
+                      {formatCurrency(salesData.monthlySales + salesData.monthlySalesOnline)}
+                    </h3>
+                  </div>
+                </div>
+                <div className="icon-shape bg-warning bg-opacity-10 text-warning rounded-3 p-3">
+                  <i className="bi bi-calendar-month fs-4"></i>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Sales Trend Chart */}
-      <div className="row">
+      {/* Payment Methods Card - Full width since chart is removed */}
+      <div className="row mt-4">
         <div className="col-12">
           <div className="card border-0 shadow-sm">
+            <div className="card-header bg-white border-0 pt-3 pb-2">
+              <h5 className="mb-0 fw-bold">Payment Methods Summary</h5>
+            </div>
             <div className="card-body">
-              <h5 className="card-title mb-4">7-Day Sales Trend</h5>
-              <div style={{ height: "400px" }}>
-                <Line
-                  data={chartData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: { position: "top" },
-                      tooltip: {
-                        mode: "index",
-                        intersect: false,
-                        callbacks: {
-                          label: function (context) {
-                            return `₹${context.raw.toLocaleString()}`;
-                          },
-                        },
-                      },
-                    },
-                    scales: {
-                      y: {
-                        beginAtZero: false,
-                        grid: { drawBorder: false },
-                        ticks: {
-                          callback: function (value) {
-                            return `₹${value.toLocaleString()}`;
-                          },
-                        },
-                      },
-                      x: {
-                        grid: { display: false },
-                      },
-                    },
-                  }}
-                />
+              <div className="row">
+                <div className="col-md-4 mb-4 mb-md-0">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <div className="d-flex align-items-center">
+                      <span className="badge bg-success bg-opacity-10 text-success p-2 me-3">
+                        <i className="bi bi-cash-coin"></i>
+                      </span>
+                      <div>
+                        <h6 className="mb-1">Cash Payments</h6>
+                        <span className="text-muted small">This month</span>
+                      </div>
+                    </div>
+                    <h4 className="text-success">{formatCurrency(salesData.monthlySales)}</h4>
+                  </div>
+                </div>
+                
+                <div className="col-md-4 mb-4 mb-md-0">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <div className="d-flex align-items-center">
+                      <span className="badge bg-primary bg-opacity-10 text-primary p-2 me-3">
+                        <i className="bi bi-credit-card"></i>
+                      </span>
+                      <div>
+                        <h6 className="mb-1">Online Payments</h6>
+                        <span className="text-muted small">This month</span>
+                      </div>
+                    </div>
+                    <h4 className="text-primary">{formatCurrency(salesData.monthlySalesOnline)}</h4>
+                  </div>
+                </div>
+                
+                <div className="col-md-4">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 className="mb-1">Total Revenue</h6>
+                      <span className="text-muted small">This month</span>
+                    </div>
+                    <h3 className="text-dark">
+                      {formatCurrency(salesData.monthlySales + salesData.monthlySalesOnline)}
+                    </h3>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-4">
+                <div className="d-flex justify-content-between mb-2">
+                  <span className="text-muted small">Cash: {Math.round((salesData.monthlySales / (salesData.monthlySales + salesData.monthlySalesOnline)) * 100)}%</span>
+                  <span className="text-muted small">Online: {Math.round((salesData.monthlySalesOnline / (salesData.monthlySales + salesData.monthlySalesOnline)) * 100)}%</span>
+                </div>
+                <div className="progress" style={{ height: "8px" }}>
+                  <div 
+                    className="progress-bar bg-success" 
+                    role="progressbar" 
+                    style={{ 
+                      width: `${(salesData.monthlySales / (salesData.monthlySales + salesData.monthlySalesOnline)) * 100}%` 
+                    }} 
+                  ></div>
+                  <div 
+                    className="progress-bar bg-primary" 
+                    role="progressbar" 
+                    style={{ 
+                      width: `${(salesData.monthlySalesOnline / (salesData.monthlySales + salesData.monthlySalesOnline)) * 100}%` 
+                    }} 
+                  ></div>
+                </div>
               </div>
             </div>
           </div>
@@ -300,6 +307,6 @@ const Analytics = () => {
       </div>
     </div>
   );
-}
+};
 
 export default Analytics;

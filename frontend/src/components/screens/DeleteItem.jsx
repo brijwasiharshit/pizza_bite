@@ -28,7 +28,7 @@ const DeleteItems = () => {
 
     try {
       await axios.delete(
-        `http://localhost:5000/api/admin/deletefooditem/${id}`,
+        `http://localhost:5000/api/kitchen/deletefooditem/${id}`,
         {
           withCredentials: true,
         }
@@ -50,7 +50,7 @@ const DeleteItems = () => {
     try {
       await axios.put(
         // changed PATCH to PUT to match backend
-        `http://localhost:5000/api/admin/updateavailability/${id}`,
+        `http://localhost:5000/api/kitchen/updateavailability/${id}`,
         { isAvailable: !currentStatus },
         { withCredentials: true }
       );

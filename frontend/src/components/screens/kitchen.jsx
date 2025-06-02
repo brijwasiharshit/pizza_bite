@@ -3,7 +3,7 @@ import { FaWhatsapp } from "react-icons/fa";
 
 
 // Then keep the JSX as is
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   Check,
   ChevronDown,
@@ -102,7 +102,6 @@ const KitchenDashboard = () => {
     const interval = setInterval(fetchOrders, 5000);
     return () => clearInterval(interval);
   }, [host]);
-  console.log(orders);
 
   const toggleTableExpanded = (tableNumber) => {
     setExpandedTables((prev) => ({
@@ -110,6 +109,7 @@ const KitchenDashboard = () => {
       [tableNumber]: !prev[tableNumber],
     }));
   };
+  //this is for clear handel tabel
 
   const handleClearTable = async (tableNumber, method) => {
     const notificationId = Date.now();
@@ -268,9 +268,16 @@ const KitchenDashboard = () => {
         ))}
       </div>
 
-      <header className="kitchen-header">
-        <h1>RECEPTION DASHBOARD</h1>
-      </header>
+      {/* <header className="kitchen-header"></header> */}
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h1 className="h2 fw-bold text-primary">
+          <i className="bi bi-graph-up me-2"></i>
+          Kitchen Dashboard
+        </h1>
+        <NavLink to="/kitchen/items" className="btn btn-outline-primary">
+          Items
+        </NavLink>
+      </div>
 
       <div className="tables-grid">
         {Object.keys(orders)

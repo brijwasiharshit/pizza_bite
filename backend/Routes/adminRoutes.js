@@ -31,44 +31,101 @@ adminRouter.get("/salesToday", async (req, res) => {
       createdAt: { $gte: todayStart },
     }).lean();
 
-    let totalSales = 0;
+    let totalSalesInCash = 0;
+        let totalSalesInOnline = 0;
+
 
     for (const order of orders) {
       const foodItem = await FoodItem.findById(order.itemId).lean();
       if (foodItem && foodItem.options[order.portion]) {
-        totalSales += foodItem.options[order.portion] * order.quantity;
+        if(order.method==="cash"){  totalSalesInCash += foodItem.options[order.portion] * order.quantity;}
+        else{ totalSalesInOnline += foodItem.options[order.portion] * order.quantity;}
+       
       }
     }
 
-    res.json({ success: true, totalSalesToday: totalSales });
+    res.json({ success: true, totalSalesTodayInCash: totalSalesInCash,totalSalesTodayInOnline:totalSalesInOnline });
   } catch (err) {
     console.error("Error in salesToday:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
-adminRouter.get("/weeklySales", async (req, res) => {
-  try {
-    const last7Days = getSevenDaysAgo();
-    const orders = await Order.find({
-      status: "delivered",
-      createdAt: { $gte: last7Days },
-    }).lean();
+// adminRouter.get("/weeklySales", async (req, res) => {
+//   try {
+//     const last7Days = getSevenDaysAgo();
+//     const orders = await Order.find({
+//       status: "delivered",
+//       createdAt: { $gte: last7Days },
+//     }).lean();
 
-    let totalSales = 0;
+//     let totalSales = 0;
 
-    for (const order of orders) {
-      const foodItem = await FoodItem.findById(order.itemId).lean();
-      if (foodItem && foodItem.options[order.portion]) {
-        totalSales += foodItem.options[order.portion] * order.quantity;
-      }
-    }
+//     for (const order of orders) {
+//       const foodItem = await FoodItem.findById(order.itemId).lean();
+//       if (foodItem && foodItem.options[order.portion]) {
+//         totalSales += foodItem.options[order.portion] * order.quantity;
+//       }
+//     }
 
-    res.json({ success: true, totalSalesWeekly: totalSales });
-  } catch (err) {
-    console.error("Error in weeklySales:", err);
-    res.status(500).json({ success: false, error: err.message });
+//     res.json({ success: true, totalSalesWeekly: totalSales });
+//   } catch (err) {
+//     console.error("Error in weeklySales:", err);
+//     res.status(500).json({ success: false, error: err.message });
+//   }
+// });
+
+//this route for weekely sales in cash created by me
+
+adminRouter.get("/weeklySales",async(req,res)=>{try { 
+  // function for get weekly dates
+  
+  
+  function getSevenDaysAgo(){
+//this is for today date
+    const date=new Date()
+    // and this is for extracting sevan days befor today date
+    date.setDate(date.getDate()-7)
+    // this is for correct date extracting
+      date.setHours(0, 0, 0, 0);
+return date
   }
-});
+  const last7Days = getSevenDaysAgo();
+  // find items which have been deliverd and created by in sevan days
+    items= await Order.find({status:"delivered",createdAt:{$gte:last7Days}}) 
+// initialize  values
+    totalSalesWeeklyInCash=0
+        totalSalesWeeklyInOnline=0
+    
+// using for of loop for extracting order from items
+
+    for(const order of items)  
+      { 
+   const foodPrice= await FoodItem.findById(order.itemId)
+// we use and opretor for checking all three condition
+if(foodPrice&&foodPrice.options &&order.portion){
+  // get item price
+  // foodPrice.options it's food prices and it's user order portions (order.portion)
+  const itemPrice=foodPrice.options[order.portion]
+
+ const orderprices=itemPrice*order.quantity
+//  condition for checking payment methods
+if(order.method==="cash"){totalSalesWeeklyInCash+=orderprices
+
+ }else{totalSalesWeeklyInOnline+=orderprices
+}
+      }}
+      
+ 
+   res.status(200).json({ success:true,message:"fetched sussesfully weekelysales",weekelySalesInOnline:totalSalesWeeklyInOnline, weekelySalesInCash:totalSalesWeeklyInCash})
+
+  
+} catch (error) {   res.status(500).json({ success: false, error: err.message })}
+
+  
+}
+
+
+)
 
 // this is for cash payment
 adminRouter.get("/monthlySales", async (req, res) => {
@@ -76,6 +133,7 @@ adminRouter.get("/monthlySales", async (req, res) => {
     // 1. Get the first day of the current month
     const today = new Date(); // ✅ Fixed: "date" → "Date" (JavaScript is case-sensitive)
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    
 
     // 2. Fetch all delivered orders this month
     const orders = await Order.find({
@@ -165,228 +223,95 @@ adminRouter.get("/monthlySalesOnline", async (req, res) => {
   }
 });
 
-// TOTAL ORDERS
-adminRouter.get("/totalOrders", async (req, res) => {
-  try {
-    const totalOrders = await Order.countDocuments({ status: "delivered" });
+// // TOTAL ORDERS
+// adminRouter.get("/totalOrders", async (req, res) => {
+//   try {
+//     const totalOrders = await Order.countDocuments({ status: "delivered" });
 
-    res.json({ success: true, totalOrders });
-  } catch (err) {
-    console.error("Error in totalOrders:", err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
+//     res.json({ success: true, totalOrders });
+//   } catch (err) {
+//     console.error("Error in totalOrders:", err);
+//     res.status(500).json({ success: false, error: err.message });
+//   }
+// });
 
-// AVERAGE ORDER VALUE
-adminRouter.get("/avgOrderValue", async (req, res) => {
-  try {
-    const orders = await Order.find({
-      status: "delivered",
-    }).lean();
+// // AVERAGE ORDER VALUE
+// adminRouter.get("/avgOrderValue", async (req, res) => {
+//   try {
+//     const orders = await Order.find({
+//       status: "delivered",
+//     }).lean();
 
-    const tableWiseTotals = {}; // { tableNo: totalPrice }
+//     const tableWiseTotals = {}; // { tableNo: totalPrice }
 
-    for (const order of orders) {
-      const foodItem = await FoodItem.findById(order.itemId).lean();
-      if (foodItem && foodItem.options[order.portion]) {
-        const price = foodItem.options[order.portion] * order.quantity;
-        if (tableWiseTotals[order.tableNo]) {
-          tableWiseTotals[order.tableNo] += price;
-        } else {
-          tableWiseTotals[order.tableNo] = price;
-        }
-      }
-    }
+//     for (const order of orders) {
+//       const foodItem = await FoodItem.findById(order.itemId).lean();
+//       if (foodItem && foodItem.options[order.portion]) {
+//         const price = foodItem.options[order.portion] * order.quantity;
+//         if (tableWiseTotals[order.tableNo]) {
+//           tableWiseTotals[order.tableNo] += price;
+//         } else {
+//           tableWiseTotals[order.tableNo] = price;
+//         }
+//       }
+//     }
 
-    const totalRevenue = Object.values(tableWiseTotals).reduce(
-      (a, b) => a + b,
-      0
-    );
-    const numberOfTables = Object.keys(tableWiseTotals).length;
-    const avgOrderValue =
-      numberOfTables > 0 ? totalRevenue / numberOfTables : 0;
+//     const totalRevenue = Object.values(tableWiseTotals).reduce(
+//       (a, b) => a + b,
+//       0
+//     );
+//     const numberOfTables = Object.keys(tableWiseTotals).length;
+//     const avgOrderValue =
+//       numberOfTables > 0 ? totalRevenue / numberOfTables : 0;
 
-    res.json({ success: true, avgOrderValue });
-  } catch (err) {
-    console.error("Error in avgOrderValue:", err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-adminRouter.get("/oneWeekComparison", async (req, res) => {
-  try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+//     res.json({ success: true, avgOrderValue });
+//   } catch (err) {
+//     console.error("Error in avgOrderValue:", err);
+//     res.status(500).json({ success: false, error: err.message });
+//   }
+// });
+// adminRouter.get("/oneWeekComparison", async (req, res) => {
+//   try {
+//     const today = new Date();
+//     today.setHours(0, 0, 0, 0);
 
-    const salesData = [];
+//     const salesData = [];
 
-    for (let i = 6; i >= 0; i--) {
-      const dayStart = new Date(today);
-      dayStart.setDate(today.getDate() - i);
+//     for (let i = 6; i >= 0; i--) {
+//       const dayStart = new Date(today);
+//       dayStart.setDate(today.getDate() - i);
 
-      const dayEnd = new Date(dayStart);
-      dayEnd.setDate(dayEnd.getDate() + 1);
+//       const dayEnd = new Date(dayStart);
+//       dayEnd.setDate(dayEnd.getDate() + 1);
 
-      const orders = await Order.find({
-        status: "delivered",
-        createdAt: { $gte: dayStart, $lt: dayEnd },
-      }).lean();
+//       const orders = await Order.find({
+//         status: "delivered",
+//         createdAt: { $gte: dayStart, $lt: dayEnd },
+//       }).lean();
 
-      let dailyTotal = 0;
+//       let dailyTotal = 0;
 
-      for (const order of orders) {
-        const foodItem = await FoodItem.findById(order.itemId).lean();
-        if (foodItem && foodItem.options[order.portion]) {
-          dailyTotal += foodItem.options[order.portion] * order.quantity;
-        }
-      }
+//       for (const order of orders) {
+//         const foodItem = await FoodItem.findById(order.itemId).lean();
+//         if (foodItem && foodItem.options[order.portion]) {
+//           dailyTotal += foodItem.options[order.portion] * order.quantity;
+//         }
+//       }
 
-      salesData.push({
-        date: dayStart.toISOString().split("T")[0], // Format: YYYY-MM-DD
-        totalSales: dailyTotal,
-      });
-    }
+//       salesData.push({
+//         date: dayStart.toISOString().split("T")[0], // Format: YYYY-MM-DD
+//         totalSales: dailyTotal,
+//       });
+//     }
 
-    res.json({ success: true, salesLast7Days: salesData });
-  } catch (err) {
-    console.error("Error in oneWeekComparison:", err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-
-// updating food item
-adminRouter.put('/updateavailability/:id' , async (req, res) => {
-  try {
-    const {id} = req.params;
-    const updated = await FoodItem.findByIdAndUpdate(id,
-      { isAvailable: req.body.isAvailable },
-      { new: true }
-    );
-    res.json(updated);
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to update availability' });
-  }
-});
-// DELETE food item by ID
-adminRouter.delete("/deletefooditem/:id", async (req, res) => {
-  try {
-    const deletedItem = await FoodItem.findByIdAndDelete(req.params.id);
-
-    if (!deletedItem) {
-      return res.status(404).json({
-        success: false,
-        message: "Food item not found",
-      });
-    }
-
-    res.json({
-      success: true,
-      message: "Food item deleted successfully",
-      deletedItem,
-    });
-  } catch (err) {
-    console.error("Error deleting food item:", err);
-
-    // Handle invalid ID format
-    if (err.name === "CastError") {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid food item ID format",
-      });
-    }
-
-    res.status(500).json({
-      success: false,
-      message: "Failed to delete food item",
-      error: err.message,
-    });
-  }
-});
+//     res.json({ success: true, salesLast7Days: salesData });
+//   } catch (err) {
+//     console.error("Error in oneWeekComparison:", err);
+//     res.status(500).json({ success: false, error: err.message });
+//   }
+// });
 
 
-adminRouter.post("/addfooditem", async (req, res) => {
-  try {
-    console.log("api called!");
-    const { name, description, options, category, imageUrl } = req.body;
-    console.log(name);
-    console.log(description);
-    console.log(options);
-    console.log(category);
-    console.log(imageUrl);
-    // Validate required fields
-    if (!name || !options || !category) {
-      return res.status(400).json({
-        success: false,
-        message: "Name, options, and category are required fields",
-      });
-    }
 
-    // Validate options is an object with at least one key-value pair
-    if (typeof options !== "object" || Object.keys(options).length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Options must be an object with at least one price option",
-      });
-    }
-
-    // Create new food item
-    const newItem = new FoodItem({
-      name,
-      description: description || "",
-      options,
-      category,
-      imageUrl: imageUrl || "",
-      isAvailable: true,
-    });
-
-    await newItem.save();
-
-    res.status(201).json({
-      success: true,
-      message: "Food item added successfully!",
-      foodItem: newItem,
-    });
-  } catch (error) {
-    console.error("Error adding food item:", error);
-
-    // Handle duplicate name error
-    if (error.code === 11000) {
-      return res.status(400).json({
-        success: false,
-        message: "Food item with this name already exists",
-      });
-    }
-
-    // Handle validation errors
-    if (error.name === "ValidationError") {
-      const errors = Object.values(error.errors).map((e) => ({
-        field: e.path,
-        message: e.message,
-      }));
-      return res.status(400).json({
-        success: false,
-        message: "Validation failed",
-        errors,
-      });
-    }
-
-    res.status(500).json({
-      success: false,
-      message: "Failed to add food item",
-      error: error.message,
-    });
-  }
-});
-
-adminRouter.post("/addCategory", async (req, res) => {
-  try {
-    const { name, description } = req.body;
-    const category = new Category({ name, description });
-    category.save();
-    res.send("Category added successfully!");
-  } catch (err) {
-    console.log(err);
-  }
-});
 
 module.exports = adminRouter;
