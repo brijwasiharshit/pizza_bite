@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { FaWhatsapp } from "react-icons/fa";
-
-
-// Then keep the JSX as is
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   Check,
@@ -18,16 +15,10 @@ import io from "socket.io-client";
 import PrintBill from "./PrintBill";
 
 const KitchenDashboard = () => {
-  //this is for printing bill
-
   const [printBill, setPrintBill] = useState(false);
-  // Add this with your other state hooks
   const [showPaymentNote, setShowPaymentNote] = useState(false);
-  //this state for manageing country code
   const [countryCOde, setCountryCode] = useState("+91");
-  // this state for handeling showpopupmessage
   const [showPopup, setShowPopup] = useState(false);
-  //this state for store mobile no
   const [phone, setPhone] = useState("");
   const [orders, setOrders] = useState({});
   const [expandedTables, setExpandedTables] = useState({});
@@ -48,8 +39,7 @@ const KitchenDashboard = () => {
     const socket = io(host);
 
     socket.on("newOrder", (newOrder) => {
-      const audio = new Audio("/notification.mp3");
-      audio.play().catch((e) => console.error("Audio playback error:", e));
+      playNotificationSound();
 
       setOrders((prevOrders) => {
         const updatedOrders = { ...prevOrders };
@@ -109,7 +99,6 @@ const KitchenDashboard = () => {
       [tableNumber]: !prev[tableNumber],
     }));
   };
-  //this is for clear handel tabel
 
   const handleClearTable = async (tableNumber, method) => {
     const notificationId = Date.now();
@@ -224,34 +213,70 @@ const KitchenDashboard = () => {
       minute: "2-digit",
     });
   };
-  // this is for creating dynmic bill
 
-  const genrateBill = (tabelNo) => {
-    // this is for extracting tabel order
-    const tabelOrder = orders[tabelNo];
-    if (!tabelOrder || tabelOrder.length === 0) {
-      return `No orders found for Table ${tabelNo}.`;
+  const generateBill = (tableNo) => {
+    const tableOrder = orders[tableNo];
+    if (!tableOrder || tableOrder.length === 0) {
+      return `No orders found for Table ${tableNo}.`;
     }
-    let message = `🧾 Bill for Table ${tabelNo}:\n\n`;
+    
+    // Current date and time
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-IN', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric' 
+    });
+    const timeStr = now.toLocaleTimeString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    
+    let message = `🟢 *Baba Neeb Karori Restro & Cafe* 🟢\n`;
+    message += `📍 Mehra Gaon, Bhimtal, Uttarakhand\n\n`;
+    message += `🧾 *BILL RECEIPT* 🧾\n`;
+    message += `📅 Date: ${dateStr}\n`;
+    message += `⏰ Time: ${timeStr}\n`;
+    message += `🪑 Table: ${tableNo}\n\n`;
+    message += `--------------------------------\n`;
+    message += `*Item*             Qty    Amount\n`;
+    message += `--------------------------------\n`;
+    
     let total = 0;
-    tabelOrder.forEach((order, index) => {
+    tableOrder.forEach((order, index) => {
       const itemLineSum = order.quantity * order.price;
-      // this is for message + add other message
-      message += `${index + 1}. ${order.itemName} (${order.portion}) x${
-        order.quantity
-      } = ₹${itemLineSum}\n`;
+      // Format item name to fit in 15 characters, pad with spaces
+      const itemName = (order.itemName.length > 15 ? 
+                       order.itemName.substring(0, 12) + '...' : 
+                       order.itemName).padEnd(15);
+      const portion = order.portion ? `(${order.portion})` : '';
+      
+      message += `${index + 1}. ${itemName} ${order.quantity.toString().padStart(3)}    ₹${itemLineSum.toFixed(2)}\n`;
       total += itemLineSum;
     });
-    message += `\n------------------\nTotal: ₹${total}\nThank you! 🙏`;
+    
+    // Calculate GST (assuming 5%)
+   
+    const grandTotal = total
+    
+    message += `--------------------------------\n`;
+    message += `Sub Total:        ₹${total.toFixed(2)}\n`;
+    
+    message += `*Grand Total:     ₹${grandTotal.toFixed(2)}*\n\n`;
+    message += `💵 Payment Method: Cash/UPI\n\n`;
+    message += `🙏 *Thank you for dining with us!*\n`;
+    message += `We hope to serve you again soon.\n\n`;
+
+    message += `📞 *Contact*: +91 9411336893\n`;
+    message += `⏰ *Open*: 09AM - 11PM Daily\n\n`;
+    message += `🌟 *Please share your feedback with us!* 🌟`;
 
     return message;
   };
 
-  // this function is handeling sendbillonwhatshapp
-
-  const handelSendBill = (selectedTable) => {
+  const handleSendBill = (selectedTable) => {
     const mobileNo = countryCOde + phone;
-    const messageForBill = genrateBill(selectedTable);
+    const messageForBill = generateBill(selectedTable);
     const url = `https://wa.me/${mobileNo}?text=${encodeURIComponent(
       messageForBill
     )}`;
@@ -268,7 +293,6 @@ const KitchenDashboard = () => {
         ))}
       </div>
 
-      {/* <header className="kitchen-header"></header> */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1 className="h2 fw-bold text-primary">
           <i className="bi bi-graph-up me-2"></i>
@@ -296,24 +320,20 @@ const KitchenDashboard = () => {
                 </div>
 
                 <div className="table-actions">
-                  {/* this is for sending bill on whatshapp */}
                   <button
                     className="clear-table-btn"
                     onClick={(e) => {
-                      //set tabel no
                       setSelectedTable(tableNumber);
                       setShowPopup(true);
                       setPhone("");
                     }}
-                    title="send bill on whatshapp">
+                    title="send bill on whatsapp">
                     <FaWhatsapp size={18} style={{ color: "green" }} />
                   </button>
                   <button
                     className="clear-table-btn"
                     onClick={(e) => {
                       e.stopPropagation();
-                      // setPrintBill(true);
-
                       setSelectedTable(tableNumber);
                       setShowPayment(true);
                     }}
@@ -381,7 +401,6 @@ const KitchenDashboard = () => {
       {showPayment && (
         <div className="payment-modal-overlay">
           <div className="payment-modal-container">
-            {/* Header with close button */}
             <div className="payment-modal-header">
               <h2 className="payment-modal-title">Complete Payment</h2>
               <button
@@ -407,7 +426,6 @@ const KitchenDashboard = () => {
               </button>
             </div>
 
-            {/* Payment options */}
             <div className="payment-options">
               <button
                 className="payment-option cash-option"
@@ -499,11 +517,10 @@ const KitchenDashboard = () => {
         </div>
       )}
 
-      {/* this is for show whatshapp bill sending */}
+      {/* WhatsApp bill sending modal */}
       {showPopup && (
         <div className="whatsapp-modal-overlay">
           <div className="whatsapp-modal-card">
-            {/* Close button in top-right corner */}
             <button
               className="close-button"
               onClick={() => setShowPopup(false)}
@@ -512,7 +529,7 @@ const KitchenDashboard = () => {
             </button>
 
             <div className="modal-header">
-              <i className="whatsapp-icon">📱</i>
+              <FaWhatsapp size={24} style={{ color: "#25D366" }} />
               <h2 className="modal-title">Send Bill via WhatsApp</h2>
             </div>
 
@@ -542,14 +559,14 @@ const KitchenDashboard = () => {
             <div className="modal-footer">
               <button
                 onClick={() => {
-                  handelSendBill(selectedTable);
+                  handleSendBill(selectedTable);
                   setShowPopup(false);
                 }}
                 className="send-button"
                 disabled={!phone}
                 aria-label="Send Bill">
                 <span>Send Bill</span>
-                <i className="send-icon">→</i>
+                <FaWhatsapp size={18} style={{ marginLeft: "8px" }} />
               </button>
             </div>
           </div>
