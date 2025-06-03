@@ -175,10 +175,6 @@ export default function Home() {
     item?.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const filteredByCategory = activeCategory
-    ? filteredItems.filter((item) => item.category === activeCategory)
-    : filteredItems;
-
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -191,7 +187,7 @@ export default function Home() {
         }
 
         const data = await response.json();
-
+        console.log(data);
         if (!data.foodItems || data.foodItems.length === 0) {
           throw new Error("No food items available");
         }
@@ -272,46 +268,78 @@ export default function Home() {
           </div>
 
           <div className="menu-container">
-            {foodCat
-              .filter((category) => category._id === activeCategory)
-              .map((category) => (
-                <div key={category._id} className="category-section">
-       
-                  <div className="food-items-grid">
-                    {filteredItems.map((item) => (
-                        <div key={item._id} className="food-item-card">
-                          <img
-                            src={item.imageUrl}
-                            alt={item.name}
-                            className="food-item-image"
-                          />
-                          <div className="food-item-details">
-                            <h3>{item.name}</h3>
-                            <div className="price-options">
-                              {Object.entries(item.options).map(
-                                ([option, price]) => (
+            {searchQuery.length > 0 ? (
+              // Show all matching search results regardless of category
+              <div className="food-items-grid">
+                {filteredItems.map((item) => (
+                  <div key={item._id} className="food-item-card">
+                    <img
+                      src={item.imageUrl}
+                      alt={item.name}
+                      className="food-item-image"
+                    />
+                    <div className="food-item-details">
+                      <h3>{item.name}</h3>
+                      <div className="price-options">
+                        {Object.entries(item.options).map(([option, price]) => (
+                          <div key={option} className="price-option">
+                            <span>
+                              {option}: ₹{price}
+                            </span>
+                            <button
+                              onClick={() => addToCart(item, option, price)}
+                              className="add-to-cart-btn"
+                            >
+                              Add
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              // Show category-wise items when not searching
+              foodCat
+                .filter((category) => category._id === activeCategory)
+                .map((category) => (
+                  <div key={category._id} className="category-section">
+                    <h2 className="category-title">{category.name}</h2>
+                    <div className="food-items-grid">
+                      {foodItems
+                        .filter((item) => item.category === category._id)
+                        .map((item) => (
+                          <div key={item._id} className="food-item-card">
+                            <img
+                              src={item.imageUrl}
+                              alt={item.name}
+                              className="food-item-image"
+                            />
+                            <div className="food-item-details">
+                              <h3>{item.name}</h3>
+                              <div className="price-options">
+                                {Object.entries(item.options).map(([option, price]) => (
                                   <div key={option} className="price-option">
                                     <span>
                                       {option}: ₹{price}
                                     </span>
                                     <button
-                                      onClick={() =>
-                                        addToCart(item, option, price)
-                                      }
+                                      onClick={() => addToCart(item, option, price)}
                                       className="add-to-cart-btn"
                                     >
                                       Add
                                     </button>
                                   </div>
-                                )
-                              )}
+                                ))}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+            )}
           </div>
 
           {/* Cart Button */}
