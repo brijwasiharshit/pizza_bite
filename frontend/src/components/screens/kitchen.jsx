@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FaWhatsapp } from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
@@ -13,9 +13,12 @@ import {
 import "./kitchen.css";
 import io from "socket.io-client";
 import PrintBill from "./PrintBill";
+import PrintPOSBill from "./PrintBill";
+import { useReactToPrint } from "react-to-print";
 
 const KitchenDashboard = () => {
   const [printBill, setPrintBill] = useState(false);
+  const [printPOSBill, setPrintPOSBill] = useState(false);
   const [showPaymentNote, setShowPaymentNote] = useState(false);
   const [countryCOde, setCountryCode] = useState("+91");
   const [showPopup, setShowPopup] = useState(false);
@@ -28,13 +31,31 @@ const KitchenDashboard = () => {
 
   const navigate = useNavigate();
   const host = process.env.REACT_APP_HOST;
+  const posBillRef = useRef();
+
+  const handlePrintPOSBill = useReactToPrint({
+    content: () => posBillRef.current,
+    onAfterPrint: () => setPrintPOSBill(false),
+    pageStyle: `
+      @page { size: 80mm; margin: 0; }
+      @media print { 
+        body { width: 80mm; }
+        html, body { margin: 0; padding: 0; }
+      }
+    `,
+  });
+
+  useEffect(() => {
+    if (printPOSBill) {
+      handlePrintPOSBill();
+    }
+  }, [printPOSBill, handlePrintPOSBill]);
 
   const playNotificationSound = () => {
     const audio = new Audio("/notification.mp3");
     audio.play().catch((e) => console.error("Audio playback error:", e));
   };
 
-  // Socket connection for real-time updates
   useEffect(() => {
     const socket = io(host);
 
@@ -72,7 +93,6 @@ const KitchenDashboard = () => {
     return () => socket.disconnect();
   }, [host]);
 
-  // Fetch all orders
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -80,6 +100,7 @@ const KitchenDashboard = () => {
           credentials: "include",
         });
         const data = await response.json();
+        console.log(data);
         if (data.success) {
           setOrders(data.data);
         }
@@ -186,8 +207,9 @@ const KitchenDashboard = () => {
   };
 
   const calculateTableTotal = (tableOrders) => {
+    console.log("tableOrders", tableOrders);
     return tableOrders.reduce(
-      (total, order) => total + order.price * order.quantity,
+      (total, order) => total + order.price ,
       0
     );
   };
@@ -220,7 +242,6 @@ const KitchenDashboard = () => {
       return `No orders found for Table ${tableNo}.`;
     }
     
-    // Current date and time
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-IN', { 
       day: '2-digit', 
@@ -245,7 +266,6 @@ const KitchenDashboard = () => {
     let total = 0;
     tableOrder.forEach((order, index) => {
       const itemLineSum = order.quantity * order.price;
-      // Format item name to fit in 15 characters, pad with spaces
       const itemName = (order.itemName.length > 15 ? 
                        order.itemName.substring(0, 12) + '...' : 
                        order.itemName).padEnd(15);
@@ -255,8 +275,6 @@ const KitchenDashboard = () => {
       total += itemLineSum;
     });
     
-    // Calculate GST (assuming 5%)
-   
     const grandTotal = total
     
     message += `--------------------------------\n`;
@@ -430,6 +448,7 @@ const KitchenDashboard = () => {
               <button
                 className="payment-option cash-option"
                 onClick={() => {
+                  setPrintPOSBill(true);
                   handleClearTable(selectedTable, "cash");
                   setShowPayment(false);
                 }}>
@@ -474,6 +493,7 @@ const KitchenDashboard = () => {
               <button
                 className="payment-option online-option"
                 onClick={() => {
+                  setPrintPOSBill(true);
                   handleClearTable(selectedTable, "online");
                   setShowPayment(false);
                 }}>
@@ -570,6 +590,17 @@ const KitchenDashboard = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Hidden POS bill for printing */}
+      {printPOSBill && selectedTable && (
+        <div style={{ display: "none" }}>
+          <PrintPOSBill 
+            ref={posBillRef} 
+            tableOrders={orders[selectedTable]} 
+            tableNo={selectedTable} 
+          />
         </div>
       )}
     </div>
