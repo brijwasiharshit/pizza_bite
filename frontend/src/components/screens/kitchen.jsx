@@ -265,7 +265,7 @@ const KitchenDashboard = () => {
     
     let total = 0;
     tableOrder.forEach((order, index) => {
-      const itemLineSum = order.quantity * order.price;
+      const itemLineSum =  order.price;
       const itemName = (order.itemName.length > 15 ? 
                        order.itemName.substring(0, 12) + '...' : 
                        order.itemName).padEnd(15);
